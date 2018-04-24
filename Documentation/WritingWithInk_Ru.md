@@ -1,91 +1,90 @@
-# Writing with ink
+# Написание историй на ink
 
-## Introduction
+## Введение
 
-**ink** is a scripting language built around the idea of marking up pure-text with flow in order to produce interactive scripts. 
+**ink** это скриптовый язык, построенный вокруг идеи разметки чистого текста на потоки с тем, чтобы создавать интерактивные скрипты.
 
-At its most basic, it can be used to write a Choose Your Own-style story, or a branching dialogue tree. But its real strength is in writing dialogues with lots of options and lots of recombination of the flow. 
+На самом базовом уровне он может быть использован для написания историй по типу "выбери себе приключение" или разветвлённого дерева диалогов. Но его реальная сила - в написании диалогов с массой вариантов выбора и большим количеством рекомбинаций потоков текста.
 
-**ink** offers several features to enable non-technical writers to branch often, and play out the consequences of those branches, in both minor and major ways, without fuss. 
+**ink** предлагает несколько функций, позволяющих нетехническим писателям часто разветвлять свою историю и играть с последствиями этих разветвлений, большими и маленькими, и всё это без особых хлопот.
 
-The script aims to be clean and logically ordered, so branching dialogue can be tested "by eye". The flow is described in a declarative fashion where possible.
+Скрипт создан с целью быть ясным и логически упорядоченным, так чтобы разветвлённый диалог можно было проверить "глазами". Порядок ветвлений описывается в повествовательно манере там, где только это возможно.
 
-It's also designed with redrafting in mind; so editing a flow should be fast.
+Также **ink** задумывался с учётом переписывания историй, так что правка должна быть простой и быстрой.
 
-# Part One: The Basics
+# Часть первая: Основы
 
-## 1) Content
+## 1) Содержимое
 
-### The simplest ink script
+### Простейший ink-скрипт
 
-The most basic ink script is just text in a .ink file.
+Самый базовый ink-скрипт - это просто текст в файле с расширением .ink:
 
-	Hello, world!
+	Привет, мир!
 	
-On running, this will output the content, and then stop.
+Если запустить его, он выведет своё содержимое, а затем остановится.
 
-Text on separate lines produces new paragraphs. The script:
+Текст, разбитый на строки, создаёт новые параграфы. Такой скрипт:
 
-	Hello, world!
-	Hello?
-	Hello, are you there?
+	Привет, мир!
+	Привет?
+	Привет, ты там?
 	
-produces output that looks the same.
+выведет результат, выглядящий точно так же.
 
 
-### Comments 
+### Комментарии 
 
-By default, all text in your file will appear in the output content, unless specially marked up. 
+По умолчанию, весь текст в вашем файле будет выведен в результат, если только он не размечен специальным образом.
 
-The simplest mark-up is a comment. **ink** supports two kinds of comment. There's the kind used for someone reading the code, which the compiler ignores:
+Простейшей разметкой являются комментарии. **ink** поддерживает два типа комментариев. Первый тип используется для того, кто читает код, компилятор игнорирует такие комментарии:
 
-	"What do you make of this?" she asked. 
+	"Что вы думаете об этом?", спросила она. 
 	
-	// Something unprintable...
+	// Нечто непечатное...
 	
-	"I couldn't possibly comment," I replied.
+	"Я никак не могу это прокомментировать",  ответил я.
 	
 	/*
-		... or an unlimited block of text
+		... или неограниченный кусок текста
 	*/
 
-and there's the kind used for reminding the author what they need to do, that the compiler prints out during compilation:
-
+И существует другой тип комментариев, служащий для того, чтобы напомнить автору что ему нужно сделать. Компилятор выводит такие комментарии в процессе компиляции:
 	
-	TODO: Write this section properly!
+	TODO: Эту часть следует переписать!
 
-### Tags 
+### Теги 
 
-Text content from the game will appear 'as is' when the engine runs. However, it can sometimes be useful to mark up a line of content with extra information to tell the game what to do with that content. 
+Тектовое содержимое игры появится на выходе "как есть", когда движок будет запущен. Однако, иногда бывает полезно дополнить строку содержимого дополнительной информацией о том, чтобы сказать игре, что делать с этим содержимым.
 
-**ink** provides a simple system for tagging lines of content, with hashtags. 
+**ink** предоставляет простую систему a simple system пометки строк содержимого с помощью хэштегов. 
 
-	=== content 
-		A line of normal game-text. # colour it blue
+	=== содержимое 
+		Строка нормального текста из игры. # покрасить в синий
 
-These don't show up in the main text flow, but can be read off by the game and used as you see fit. See [RunningYourInk](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md#marking-up-your-ink-content-with-tags) for more information.
+Эти хэштеги не попадают в основной поток текста, но могут быть прочитаны игрой и использованы так, как вы желаете. См.  [RunningYourInk](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md#marking-up-your-ink-content-with-tags) для более подробной информации.
 
  
-## 2) Choices 
+## 2) Варианты выбора 
 
-Input is offered to the player via text choices. A text choice is indicated by an `*` character. 
+Игрок взаимодействует с игрой посредством выбора из вариантов. Текстовый выриант выбора обозначается символом `*`. 
 
-If no other flow instructions are given, once made, the choice will flow into the next line of text.
+Если никаких других инструкций не указано, когда игрок делает выбор, его текст попадает в основной текст игры.
 
-	Hello world!
-	*	Hello back!
-		Nice to hear from you!
+	Привет, мир.
+	*	И тебе привет!
+		Рад тебя видеть!
 	
-This produces the following game:
+Результатом будет следующая игра:
 
-	Hello world 
-	1: Hello back! 
+	Привет, мир. 
+	1: И тебе привет! 
 	
 	> 1
-	Hello back!
-	Nice to hear from you.	
+	И тебе привет!
+	Рад тебя видеть!	
 
-By default, the text of a choice appears again, in the output. 
+По умолчанию, текст выбора появляется снова, в выходном потоке текста.
 	
 ### Suppressing choice text 
 
