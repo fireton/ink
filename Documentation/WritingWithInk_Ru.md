@@ -92,7 +92,7 @@
 
 	Привет, мир!
 	*	[И тебе привет!]
-		Приятно тебя слышать!
+		Приятно слышать!
 
 выводит
 
@@ -100,7 +100,7 @@
 	1: И тебе привет!
 
 	> 1
-	Приятно тебя слышать!
+	Приятно слышать!
 
 #### Дополнительно: текст выбора и выводимый текст можно смешивать
 
@@ -108,7 +108,7 @@
 
 	Привет, мир!
 	*	И тебе [привет!] тоже привет, дружище!
-		Приятно тебя слышать!
+		Приятно слышать!
 
 выводит:
 
@@ -116,17 +116,17 @@
 	1: И тебе привет!
 	> 1
 	И тебе тоже привет, дружище!
-	Приятно тебя слышать!
+	Приятно слышать!
 
 Это особенно удобно при написании вариантов в диалогах:
 
-	"Как так?" - спросил мой господин.
+	"В чём дело?" - спросил мой господин.
 	*	"Я несколько устал[."]", повторил я.
 		"В самом деле" - сказал он. "Как разрушительно."
 
 выводит:
 
-	"Как так?" - спросил мой господин.
+	"В чём дело?" - спросил мой господин.
 	1. "Я несколько устал."
 	> 1
 	"Я несколько устал", повторил я.
@@ -134,143 +134,147 @@
 
 ### Множественный выбор
 
-To make choices really choices, we need to provide alternatives. We can do this simply by listing them:
+Чтобы сделать выбор действительно выбором, необходимо предоставить несколько вариантов для выбора. Мы можем сделать это попросту добавив их в список:
 
-	"What's that?" my master asked.
-	*	"I am somewhat tired[."]," I repeated.
-		"Really," he responded. "How deleterious."
-	*	"Nothing, Monsieur!"[] I replied.
-		"Very good, then."
-	*  "I said, this journey is appalling[."] and I want no more of it."
-		"Ah," he replied, not unkindly. "I see you are feeling frustrated. Tomorrow, things will improve."
+	"В чём дело?" - спросил мой господин.
+	*	"Я несколько устал[."]", повторил я.
+		"В самом деле" - сказал он. "Как разрушительно."
+	*	"Ни в чём, месье!"[] - ответил я.
+		"Что ж, очень хорошо."
+	*	"Я говорю, это путешествие отвратительно[."] и я не хочу больше в нём участвовать."
+		"А", ответил он без раздражения. "Я вижу, ты раздосадован. Завтра всё наладится."
 
-This produces the following game:
+На выходе получится следующая игра:
 
-	"What's that?" my master asked.
+	"В чём дело?" - спросил мой господин.
 
-	1: "I am somewhat tired."
-	2: "Nothing, Monsieur!"
-	3: "I said, this journey is appalling."
+	1: "Я несколько устал."
+	2: "Ни в чём, месье!"
+	3: "Я говорю, это путешествие отвратительно."
 
 	> 3
-	"I said, this journey is appalling and I want no more of it."
-	"Ah," he replied, not unkindly. "I see you are feeling frustrated. Tomorrow, things will improve."
+	"Я говорю, это путешествие отвратительно и я не хочу больше в нём участвовать."
+	"А", ответил он без раздражения. "Я вижу, ты раздосадован. Завтра всё наладится."
 
-The above syntax is enough to write a single set of choices. In a real game, we'll want to move the flow from one point to another based on what the player chooses. To do that, we need to introduce a bit more structure.
+Синтаксис в примере выше достаточен, чтобы написать единичный набор вариантов выбора. В настоящей игре нам нужно перемещаться с одной точки на другую, основываясь на выборе игрока. Чтобы достичь этого, необходимо добавить ещё немного структуры.
 
-## 3) Knots
+## 3) Узлы
 
-### Pieces of content are called knots
+### Части содержимого называются узлами
 
-To allow the game to branch we need to mark up sections of content with names (as an old-fashioned gamebook does with its 'Paragraph 18', and the like.)
+Чтобы позволить игре разветвляться, нам нужно пометить секции содержимого, дав им названия (как в старых книгах-играх с их "Параграф 18" и тому подобное).
 
-These sections are called "knots" and they're the fundamental structural unit of ink content.
+Эти секции называются "узлами" и они являются фундаментальным элементом структуры в **ink**.
 
-### Writing a knot
+### Написание узла
 
-The start of a knot is indicated by two or more equals signs, as follows.
+Начало узла обозначается двумя или более знаками равенства, как показано дальше:
 
-	=== top_knot ===
+	=== верхний_узел ===
 
-(The equals signs on the end are optional; and the name needs to be a single word with no spaces.)
+(Знаки "равно" в конце необязательны; и название должно быть единым словом без пробелов.)
 
-The start of a knot is a header; the content that follows will be inside that knot.
+Начало узла - это заголовок, дальнейший текст попадает внутрь этого узла.
 
-	=== back_in_london ===
+	=== назад_в_лондон ===
 
-	We arrived into London at 9.45pm exactly.
+	Мы прибыли в Лондон ровно в 9:45 вечера.
 
-#### Advanced: a knottier "hello world"
+#### Дополнительно: более узловатый "привет мир"
 
-When you start an ink file, content outside of knots will be run automatically. But knots won't. So if you start using knots to hold your content, you'll need to tell the game where to go. We do this with a divert arrow `->`, which is covered properly in the next section.
+Когда вы начинаете писать файл ink, содержимое вне узлов будет запущено автоматически. Но не узлы. Так что если вы начинаете использовать узлы для разметки вашего текста, вам следует объяснить игре, куда идти. Мы сделаем это с помощью перенаправляющей стрелки `->`, о которой подробнее поговорим в следующем разделе.
 
-The simplest knotty script is:
+Простейший скрипт с узлами выглядит так:
 
-	-> top_knot
+	-> верхний_узел
 
-	=== top_knot ===
-	Hello world!
+	=== верхний_узел ===
+	Привет, мир!
 
-However, **ink** doesn't like loose ends, and produces a warning on compilation and/or run-time when it thinks this has happened. The script above produces this on compilation:
+Однако, **ink** не любит неоконченные дела и выдаёт предупреждение при компиляции и/или во время запуска, когда думает, что это произошло. Скрипт выше выдаст вот такое при компиляции:
 
 	WARNING: Apparent loose end exists where the flow runs out. Do you need a '-> END' statement, choice or divert? on line 3 of tests/test.ink
+	
+	ВНИМАНИЕ: Обнаружен незакрытый финал, поток просто прерывается. Возможно нужен '-> END', выбор или перенаправление? на строке 3 в файле tests/test.ink
 
-and this on running:
+и вот такое при запуске:
 
 	Runtime error in tests/test.ink line 3: ran out of content. Do you need a '-> DONE' or '-> END'?
+	
+	Ошибка выполнения tests/test.ink line 3: закончилось содержимое. Возможно, нужен '-> DONE' или '-> END'?
 
-The following plays and compiles without error:
+Следующий скрипт компилируется и запускается без ошибок:
 
-	=== top_knot ===
-	Hello world!
+	=== верхний_узел ===
+	Привет, мир!
 	-> END
 
-`-> END` is a marker for both the writer and the compiler; it means "the story flow should now stop".
+`-> END` является маркером и для писателя, и для компилятора; он означает "течение истории должно теперь прекратиться".
 
 ## 4) Diverts
 
-### Knots divert to knots
+### Узлы перенаправляют в другие узлы
 
-You can tell the story to move from one knot to another using `->`, a "divert arrow". Diverts happen immediately without any user input.
+Вы можете приказать истории двигаться от узла к узлу, используя `->`, "перенаправляющую стрелку". Перенаправление происходит немедленно, безо всякого вмешательства игрока.
 
-	=== back_in_london ===
+	=== назад_в_лондон ===
 
-	We arrived into London at 9.45pm exactly.
-	-> hurry_home
+	Мы прибыли в Лондон ровно в 9:45 вечера.
+	-> спешить_домой
 
-	=== hurry_home ===
-	We hurried home to Savile Row as fast as we could.
+	=== спешить_домой ===
+	Мы поспешили домой на Савил-Роу так быстро, как только могли.
 
-#### Diverts are invisible
+#### Перенаправления невидимы
 
-Diverts are intended to be seamless and can even happen mid-sentence:
+Перенаправления специально сделаны бесшовными и могут происходить даже посреди предложения:
 
-	=== hurry_home ===
-	We hurried home to Savile Row -> as_fast_as_we_could
+	=== спешить_домой ===
+	WМы поспешили домой на Савил-Роу так быстро -> как_только_могли
 
-	=== as_fast_as_we_could ===
-	as fast as we could.
+	=== как_только_могли ===
+	, как только могли.
 
-produces the same line as above:
+выдаст тот же текст, что и выше:
 
-	We hurried home to Savile Row as fast as we could.
+	Мы поспешили домой на Савил-Роу так быстро, как только могли.
 
-#### Glue
+#### Клей
 
-The default behaviour inserts line-breaks before every new line of content. In some cases, however, content must insist on not having a line-break, and it can do so using `<>`, or "glue".
+По умолчанию, **ink** вставляет разрыв строки перед каждой новой строкой текста. В некоторых случаях, однако, необходимо настоять, чтобы в тексте не было разрывов строк, и это можно сделать с помощью `<>`, или "клея".
 
-	=== hurry_home ===
-	We hurried home <>
-	-> to_savile_row
+	=== спешить_домой ===
+	Мы поспешили домой <>
+	-> на_савил_роу
 
-	=== to_savile_row ===
-	to Savile Row
-	-> as_fast_as_we_could
+	=== на_савил_роу ===
+	на Савил-Роу
+	-> быстро_как_только_могли
 
-	=== as_fast_as_we_could ===
-	<> as fast as we could.
+	=== быстро_как_только_могли ===
+	<> так быстро, как только могли.
 
-also produces:
+тоже выводит:
 
-	We hurried home to Savile Row as fast as we could.
+	Мы поспешили домой на Савил-Роу так быстро, как только могли.
 
-You can't use too much glue: multiple glues next to each other have no additional effect. (And there's no way to "negate" a glue; once a line is sticky, it'll stick.)
+Вы не можете намазать слишком много клея: несколько "клеев", идущих подряд, не имеют дополнительного эффекта. (Также, нет способа "нейтрализовать" клей; как только строка стала липкой, она прилипнет.)
 
 
-## 5) Branching The Flow
+## 5) Ветвление истории
 
-### Basic branching
+### Базовое ветвление
 
-Combining knots, options and diverts gives us the basic structure of a choose-your-own game.
+Комбинируя узлы, варианты выбора и перенаправления, мы получим базовую структуру игры типа "выбери себе приключение".
 
-	== paragraph_1 ===
-	You stand by the wall of Analand, sword in hand.
-	* [Open the gate] -> paragraph_2
-	* [Smash down the gate] -> paragraph_3
-	* [Turn back and go home] -> paragraph_4
+	=== параграф_1 ===
+	Ты стоишь перед стеной, окружающей Аналанд, с мечом в руке.
+	* [Открыть ворота] -> параграф_2
+	* [Разбить ворота] -> параграф_3
+	* [Развернуться и пойти домой] -> параграф_4
 
-	=== paragraph_2 ===
-	You open the gate, and step out onto the path.
+	=== параграф_2 ===
+	Ты открываешь ворота и шагаешь по дороге.
 
 	...
 
