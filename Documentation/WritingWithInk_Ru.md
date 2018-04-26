@@ -278,248 +278,252 @@
 
 	...
 
-### Branching and joining
+### Ветвление и соединение
 
-Using diverts, the writer can branch the flow, and join it back up again, without showing the player that the flow has rejoined.
+Используя перенаправления, писатель может разветвлять повествование и соединять его обратно, не показывая при этом игроку, что оно было заново слито в единый поток.
 
-	=== back_in_london ===
+	=== назад_в_лондон ===
 
-	We arrived into London at 9.45pm exactly.
+	Мы прибыли в Лондон ровно в 9:45 вечера.
 
-	*	"There is not a moment to lose!"[] I declared.
-		-> hurry_outside
+	*	"Мы не должны проиграть!"[], провозгласил я.
+		-> спешить_наружу
 
-	*	"Monsieur, let us savour this moment!"[] I declared.
-		My master clouted me firmly around the head and dragged me out of the door.
-		-> dragged_outside
+	*	"Месье, давайте насладимся этим мгновением!"[], воскликнул я.
+		Господин дал мне подзатыльник и выволок меня через дверь наружу.
+		-> вытащен_наружу
 
-	*	[We hurried home] -> hurry_outside
-
-
-	=== hurry_outside ===
-	We hurried home to Savile Row -> as_fast_as_we_could
+	*	[Мы поспешили домой] -> спешить_наружу
 
 
-	=== dragged_outside ===
-	He insisted that we hurried home to Savile Row
-	-> as_fast_as_we_could
+	=== спешить_наружу ===
+	Мы поспешили домой на Савил-Роу 
+	-> быстро_как_только_могли
 
 
-	=== as_fast_as_we_could ===
-	<> as fast as we could.
+	=== вытащен_наружу ===
+	Он настоял, чтобы мы поспешили домой на Савил-Роу
+	-> быстро_как_только_могли
 
 
-### The story flow
+	=== быстро_как_только_могли ===
+	<> так быстро, как только могли.
 
-Knots and diverts combine to create the basic story flow of the game. This flow is "flat" - there's no call-stack, and diverts aren't "returned" from.
 
-In most ink scripts, the story flow starts at the top, bounces around in a spaghetti-like mess, and eventually, hopefully, reaches a `-> END`.
+### Повествование
 
-The very loose structure means writers can get on and write, branching and rejoining without worrying about the structure that they're creating as they go. There's no boiler-plate to creating new branches or diversions, and no need to track any state.
+Узлы и перенаправления комбинируются, чтобы создать базовое повествование в игре. Это повествование "плоское" - в нём нет "стека вызовов" и из перенаправлений нельзя "вернуться".
 
-#### Advanced: Loops
+В большинстве ink-скриптов история начинается сверху, мечется по всему коду в стиле спагетти и, в конце концов, будем надеяться, достигает `-> END`.
 
-You absolutely can use diverts to create looped content, and **ink** has several features to exploit this, including ways to make the content vary itself, and ways to control how often options can be chosen.
+Очень свободная структура означает, что писатель может легко взяться за дело, разветвляя и объединяя повествование не волнуясь о структуре, которую создаёт прямо на ходу. Нет каких-то шаблонных заготовок для создания новых ветвей или перенаправлений, а также нет необходимости следить за текущим состоянием.
 
-See the sections on Varying Text and Conditional Options for more information.
+#### Дополнительно: Циклы
 
-Oh, and the following is legal and not a great idea:
+Вы безусловно можете использовать перенаправления для создания зацикленного содержимого, и в **ink** есть несколько функциональных возможностей для их использования, включая такие, которые помогут тексту меняться самостоятельно, а также способы контролировать как часто может быть выбран тот или иной вариант выбора.
 
-	=== round ===
-	and
-	-> round
+Смотрите главы *Меняющийся текст* и *Условные варианты выбора* для более подробной информации.
 
-## 6) Includes and Stitches
+О, и следующее вполне легально, но не слишком хорошая идея:
 
-### Knots can be subdivided
+	=== кругом ===
+	и
+	-> кругом
 
-As stories get longer, they become more confusing to keep organised without some additional structure.
+## 6) Включения и стежки
 
-Knots can include sub-sections called "stitches". These are marked using a single equals sign.
+### Узлы можно разделять на более мелкие части
 
-	=== the_orient_express ===
-	= in_first_class
+По мере того, как история становится длиннее, её всё труднее сохранять в организованном виде без какой-либо дополнительной структуры.
+
+Узлы могут включать в себя подсекции, которые называются "стежки". Они размечаются с использованием единичного знака равенства.
+
+	=== восточный_экспресс ===
+	= в_первом_классе
 		...
-	= in_third_class
+	= в_третьем_классе
 		...
-	= in_the_guards_van
+	= в_вагоне_охраны
 		...
-	= missed_the_train
-		...
-
-One could use a knot for a scene, for instance, and stitches for the events within the scene.
-
-### Stitches have unique names		
-
-A stitch can be diverted to using its "address".
-
-	*	[Travel in third class]
-		-> the_orient_express.in_third_class
-
-	*	[Travel in the guard's van]
-		-> the_orient_express.in_the_guards_van
-
-### The first stitch is the default
-
-Diverting to a knot which contains stitches will divert to the first stitch in the knot. So:
-
-	*	[Travel in first class]
-		"First class, Monsieur. Where else?"
-		-> the_orient_express
-
-is the same as:
-
-	*	[Travel in first class]
-		"First class, Monsieur. Where else?"
-		-> the_orient_express.in_first_class
-
-(...unless we move the order of the stitches around inside the knot!)
-
-You can also include content at the top of a knot outside of any stitch. However, you need to remember to divert out of it - the engine *won't* automatically enter the first stitch once it's worked its way through the header content.
-
-	=== the_orient_express ===
-
-	We boarded the train, but where?
-	*	[First class] -> in_first_class
-	*	[Second class] -> in_second_class
-
-	= in_first_class
-		...
-	= in_second_class
+	= опоздали_на_поезд
 		...
 
+Можно, например, использовать узел в качестве сцены, а стежки - для событий на этой сцене.
 
-### Local diverts
+### У стежков уникальные названия
 
-From inside a knot, you don't need to use the full address for a stitch.
+На стежок можно перейти, используя его "адрес".
 
-	-> the_orient_express
+	*	[Путешествовать третьим классом]
+		-> восточный_экспресс.в_третьем_классе
 
-	=== the_orient_express ===
-	= in_first_class
-		I settled my master.
-		*	[Move to third class]
-			-> in_third_class
+	*	[Путешествовать в вагоне охраны]
+		-> восточный_экспресс.в_вагоне_охраны
 
-	= in_third_class
-		I put myself in third.
+### Первый стежок используется по умолчанию
 
-This means stitches and knots can't share names, but several knots can contain the same stitch name. (So both the Orient Express and the SS Mongolia can have first class.)
+Переход на узел, содержащий стежки, идёт на первый стежок в этом узле. Так:
 
-The compiler will warn you if ambiguous names are used.
+	*	[Путешествовать первым классом]
+		"Первый класс, месье. Где же ещё?"
+		-> восточный_экспресс
 
-### Script files can be combined
+то же самое, что и:
 
-You can also split your content across multiple files, using an include statement.
+	*	[Путешествовать первым классом]
+		"Первый класс, месье. Где же ещё?"
+		-> восточный_экспресс.в_первом_классе
+
+(...если только мы не изменили порядок стежков в узле!)
+
+Вы также можете добавить текст на вершине узла, вне любого из стежков. Однако вам нужно помнить, что потребуется перенаправление - **ink** *не* заходит автоматически в первый стежок после того, как отработал текст в "заголовке".
+
+	=== восточный_экспресс ===
+
+	Мы сели в поезд, но куда?
+	*	[Первый класс] -> в_первом_классе
+	*	[Второй класс] -> во_втором_классе
+
+	= в_первом_классе
+		...
+	= во_втором_классе
+		...
+
+
+### Локальные переходы
+
+Внутри узла нет необходимости использовать полный адрес стежка.
+
+	-> восточный_экспресс
+
+	=== восточный_экспресс ===
+	= в_первом_классе
+		Я устроил господина здесь.
+		*	[Перейти в третий класс]
+			-> в_третьем_классе
+
+	= в_третьем_классе
+		Себя я поместил в третий.
+
+Это означает, что у узлов и стежков не может быть одинаковых имён, но несколько узлов могут содержать стежки с одинаковыми именами. (Так и в Восточном Экспрессе, и на пароходе "Монголия" может быть свой первый класс.)
+
+Компилятор предупредит вас, если используются неоднозначные названия.
+
+### Файлы скриптов можно комбинировать
+
+Вы также можете разделить содержимое игры по нескольким файлам, используя команду включения `INCLUDE`.
 
 	INCLUDE newspaper.ink
 	INCLUDE cities/vienna.ink
 	INCLUDE journeys/orient_express.ink
 
-Include statements should always go at the top of a file, and not inside knots.
 
-There are no rules about what file a knot must be in to be diverted to. (In other words, separating files has no effect on the game's namespacing).
+Команды `INCLUDE` всегда должны располагаться в начале файла, не внутри узлов.
 
+Не существует правила о том, в каком файле должен быть узел, чтобы на него можно было перейти. (Другими словами, разделение кода игры по файлам не влияет на пространства имён в игре.)
 
-## 5) Varying Choices
+## 5) Меняющиеся варианты выбора
 
-### Choices can only be used once
+### Вариант может быть выбран лишь единожды
 
-By default, every choice in the game can only be chosen once. If you don't have loops in your story, you'll never notice this behaviour. But if you do use loops, you'll quickly notice your options disappearing...
+По умолчанию, каждый вариант выбора в игре может быть выбран лишь один раз. Если у вас нет циклов в вашей истории, то вы никогда не заметите этого поведения. Но если циклы присутствуют, вы быстро обнаружите, что варианты выбора исчезают...
 
-	=== find_help ===
+	=== найти_помощь ===
 
-		You search desperately for a friendly face in the crowd.
-		*	The woman in the hat[?] pushes you roughly aside. -> find_help
-		*	The man with the briefcase[?] looks disgusted as you stumble past him. -> find_help
+		Вы отчаянно ищете дружественное лицо в толпе.
+		*	Женщина в шляпе[?] резко отталкивает вас. -> найти_помощь
+		*	Мужчина с портфелем[?] выглядит недовольным, когда вы спотыкаетесь о него. -> найти_помощь
 
-produces:
+приводит к:
 
-	You search desperately for a friendly face in the crowd.
+	Вы отчаянно ищете дружественное лицо в толпе.
 
-	1: The woman in the hat?
-	2: The man with the briefcase?
+	1: Женщина в шляпе?
+	2: Мужчина с портфелем?
 
 	> 1
-	The woman in the hat pushes you roughly aside.
-	You search desperately for a friendly face in the crowd.
+	Женщина в шляпе резко отталкивает вас.
+	Вы отчаянно ищете дружественное лицо в толпе.
 
-	1: The man with the briefcase?
+	1: Мужчина с портфелем?
 
 	>
 
-... and on the next loop you'll have no options left.
+... и на следующем витке цикла у вас не останется варианта выбора.
 
-#### Fallback choices
+#### Запасной вариант
 
-The above example stops where it does, because the next choice ends up in an "out of content" run-time error.
+Приведённый выше пример останавливается там, где показано, потому что следующий выбор заканчивается ошибкой времени выполнения "out of content" ("закончилось содержимое").
 
 	> 1
-	The man with the briefcase looks disgusted as you stumble past him.
-	You search desperately for a friendly face in the crowd.
+	Мужчина с портфелем выглядит недовольным, когда вы спотыкаетесь о него.
+	Вы отчаянно ищете дружественное лицо в толпе.
 
 	Runtime error in tests/test.ink line 6: ran out of content. Do you need a '-> DONE' or '-> END'?
+	
+	Ошибка выполнения tests/test.ink line 6: закончилось содержимое. Возможно, нужен '-> DONE' или '-> END'?
 
-We can resolve this with a 'fallback choice'. Fallback choices are never displayed to the player, but are 'chosen' by the game if no other options exist.
+Мы можем решить эту проблему с помощью "запасного варианта". Запасные варианты никогда не показываются игроку, но они "выбираются" игрой тогда, когда никаких других вариантов не осталось.
 
+Запасной вариант - это попросту "вариант баз текста выбора":
 A fallback choice is simply a "choice without choice text":
 
-	*	-> out_of_options
+	*	-> варианты_кончились
 
-And, in a slight abuse of syntax, we can make a default choice with content in it, using an "choice then arrow":
+И, с небольшим издевательством над синтаксисом, мы можем сделать вариант по умолчанию с содержимым, используя "выбери тогда" стрелку:
 
 	* 	->
-		Mulder never could explain how he got out of that burning box car. -> season_2
+		Малдер так никогда и не смог объяснить, как он тогда выбрался из горящей машины. -> второй_сезон
 
-#### Example of a fallback choice
+#### Пример запасного варианта
 
-Adding this into the previous example gives us:
+Добавим всё это в предыдущий пример и получим:
 
-	=== find_help ===
+	=== найти_помощь ===
 
-		You search desperately for a friendly face in the crowd.
-		*	The woman in the hat[?] pushes you roughly aside. -> find_help
-		*	The man with the briefcase[?] looks disgusted as you stumble past him. -> find_help
+		Вы отчаянно ищете дружественное лицо в толпе.
+		*	Женщина в шляпе[?] резко отталкивает вас. -> найти_помощь
+		*	Мужчина с портфелем[?] выглядит недовольным, когда вы спотыкаетесь о него. -> найти_помощь
 		*	->
-			But it is too late: you collapse onto the station platform. This is the end.
+			Но слишком поздно: вы падаете на вокзальную платформу. Это конец.
 			-> END
 
-and produces:
+что выдаст:
 
-	You search desperately for a friendly face in the crowd.
+	Вы отчаянно ищете дружественное лицо в толпе.
 
-	1: The woman in the hat?
-	2: The man with the briefcase?
-
-	> 1
-	The woman in the hat pushes you roughly aside.
-	You search desperately for a friendly face in the crowd.
-
-	1: The man with the briefcase?
+	1: Женщина в шляпе?
+	2: Мужчина с портфелем?
 
 	> 1
-	The man with the briefcase looks disgusted as you stumble past him.
-	You search desperately for a friendly face in the crowd.
-	But it is too late: you collapse onto the station platform. This is the end.
+	Женщина в шляпе резко отталкивает вас.
+	Вы отчаянно ищете дружественное лицо в толпе.
+
+	1: Мужчина с портфелем?
+
+	> 1
+	Мужчина с портфелем выглядит недовольным, когда вы спотыкаетесь о него.
+	Вы отчаянно ищете дружественное лицо в толпе.
+	Но слишком поздно: вы падаете на вокзальную платформу. Это конец.
 
 
-### Sticky choices
+### Липкие варианты
 
-The 'once-only' behaviour is not always what we want, of course, so we have a second kind of choice: the "sticky" choice. A sticky choice is simply one that doesn't get used up, and is marked by a `+` bullet.
+Поведение "только раз", конечно же, не всегда бывает желаемым. Так что нам нужен ещё один тип варианта выбора: "липкий". Липкий вариант просто не исчезает после выбора, и его можно создать с помощью знака `+` (вместо `*`) в начале.
 
-	=== homers_couch ===
-		+	[Eat another donut]
-			You eat another donut. -> homers_couch
-		*	[Get off the couch]
-			You struggle up off the couch to go and compose epic poetry.
+	=== диван_гомера ===
+		+	[Съесть ещё пончик]
+			Ты ешь ещё один пончик. -> диван_гомера
+		*	[Встать с дивана]
+			Ты с трудом поднимаешься с дивана, чтобы пойти и написать эпичное стихотворение.
 			-> END
 
-Default choices can be sticky too.
+Запасные варианты тоже могут быть липкими.
 
-	=== conversation_loop
-		*	[Talk about the weather] -> chat_weather
-		*	[Talk about the children] -> chat_children
-		+	-> sit_in_silence_again
+	=== цикл_беседы
+		*	[Поговорить о погоде] -> обсуждение_погоды
+		*	[Поговорить о детях] -> обсуждение_детей
+		+	-> посидеть_ещё_в молчании
 
 ### Conditional Choices
 
