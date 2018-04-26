@@ -548,44 +548,44 @@ A fallback choice is simply a "choice without choice text":
 	+	{ был_в_париже } {not устал_от_парижа} [Вернуться в Париж] -> был_в_париже
 
 
-#### Advanced: knot/stitch labels are actually read counts
+#### Дополнительно: метки узла/стежка на самом деле счётчики количества посещений
 
-The test:
+Проверка:
 
-	*	{seen_clue} [Accuse Mr Jefferson]
+	*	{видел_подсказку} [Обвинить мистера Джефферсона]
 
-is actually testing an *integer* and not a true/false flag. A knot or stitch used this way is actually an integer variable containing the number of times the content at the address has been seen by the player.
+на самом деле проверяет *число*, а не флажок правда/ложь. Узел или стежок, использованный таким образом, в действительности - целочисленная переменная, содержащая количество раз, которые игрок видел содержимое по этому адресу.
 
-If it's non-zero, it'll return true in a test like the one above, but you can also be more specific as well:
+Если оно не равно нулю, оно вернёт *истина* в такой проверке, как написана выше. Но проверка также может быть более конкретной:
 
-	* {seen_clue > 3} [Flat-out arrest Mr Jefferson]
+	* {видел_подсказку > 3} [Немедленно арестовать мистера Джефферсона]
 
-#### Advanced: more logic
+#### Дополнительно: больше логики
 
-**ink** supports a lot more logic and conditionality than covered here - see the section on 'variables and logic'.
+**ink** поддерживает гораздо более сложную логику и условия, чем описанные тут - смотри главу *Переменные и логика*.
 
 
-## 6) Variable Text
+## 6) Изменяющийся текст
 
-### Text can vary
+### Текст может варьироваться
 
-So far, all the content we've seen has been static, fixed pieces of text. But content can also vary at the moment of being printed.
+До сих пор всё содержимое игры, что мы видели, было статичным, фиксированные куски текста. Но содержимое также может меняться, прямо в момент вывода.
 
-### Sequences, cycles and other lists
+### Последовательности, циклы и другие списки
 
-The simplest variations of text are from lists, which are selected from depending on some kind of rule. **ink** supports several types. Lists are written inside `{`...`}` curly brackets, with elements separated by `|` symbols (vertical divider lines).
+Простейший способ варьировать текст - с помощью списков, из которых он выбирается в соответствии с некоторыми правилами. **ink** поддерживает несколько видов. Списки записываются внутри фигурных скобок `{` и `}`, а элементы отделены друг от друга вертикальной чертой `|`.
 
-These are only useful if a piece of content is visited more than once!
+Естественно, что они полезны лишь в таких местах, которые посещаются больше одного раза!
 
-#### List types
+#### Типы списков
 
-**Sequences** (the default):
+**Последовательности** (по умолчанию):
 
-A sequence (or a "stopping list") is a list that tracks how many times its been seen, and each time, shows the next element along. When it runs out of new content it continues the show the final element.
+Последовательность (или "останавливающий список") это список, который следит, сколько раз его посещали, и каждый раз показывает следующий элемент. Когда элементы списка заканчиваются, он продолжает показывать последний из них.
 
-	The radio hissed into life. {"Three!"|"Two!"|"One!"|There was the white noise racket of an explosion.|But it was just static.}
+	Радио с шипением ожило. {"Три!"|"Два!"|"Один!"|Было слышно гудение белого шума от взрыва.|Но это был просто шум помех.}
 
-	{I bought a coffee with my five-pound note.|I bought a second coffee for my friend.|I didn't have enough money to buy any more coffee.}
+	{Я купил кофе, заплатив пятифунтовой купюрой.|Я купил второй кофе для друга.|У меня больше не было денег на кофе.}
 
 **Cycles** (marked with a `&`):
 
@@ -693,7 +693,7 @@ And here's a bit of lifestyle advice. Note the sticky choice - the lure of the t
 
 
 
-#### Advanced: Multiline lists
+#### Дополнительно: Multiline lists
 **ink** has another format for making lists of varying content blocks, too. See the section on "multiline blocks" for details.
 
 
@@ -753,7 +753,7 @@ Note that the parameter passed to `TURNS_SINCE` is a "divert target", not simply
 
 TODO: (requirement of passing `-c` to the compiler)
 
-#### Advanced: more queries
+#### Дополнительно: more queries
 
 You can make your own external functions, though the syntax is a bit different: see the section on functions below.
 
@@ -909,7 +909,7 @@ Sometimes, it's not a question of expanding the number of options, but having mo
 
 If the player chooses the "murder" option, they'll have two choices in a row on their sub-branch - a whole flat weave, just for them.
 
-#### Advanced: What gathers do
+#### Дополнительно: What gathers do
 
 Gathers are hopefully intuitive, but their behaviour is a little harder to put into words: in general, after an option has been taken, the story finds the next gather down that isn't on a lower level, and diverts to it.
 
@@ -1069,7 +1069,7 @@ or pointing into another knot:
 			*	{knot_one.gather_one} Option
 
 
-#### Advanced: all options can be labelled
+#### Дополнительно: all options can be labelled
 
 In truth, all content in ink is a weave, even if there are no gathers in sight. That means you can label *any* option in the game with a bracket label, and then reference it using the addressing syntax. In particular, this means you can test *which* option a player took to reach a particular outcome.
 
@@ -1083,7 +1083,7 @@ In truth, all content in ink is a weave, even if there are no gathers in sight. 
 	You hurl {throw_something.rock:a rock|a handful of sand} at the guard.
 
 
-#### Advanced: Loops in a weave
+#### Дополнительно: Loops in a weave
 
 Labelling allows us to create loops inside weaves. Here's a standard pattern for asking questions of an NPC.
 
@@ -1109,7 +1109,7 @@ Labelling allows us to create loops inside weaves. Here's a standard pattern for
 
 
 
-#### Advanced: diverting to options
+#### Дополнительно: diverting to options
 
 Options can also be diverted to: but the divert goes to the output of having chosen that choice, *as though the choice had been chosen*. So the content printed will ignore square bracketed text, and if the option is once-only, it will be marked as used up.
 
@@ -1135,7 +1135,7 @@ produces:
 
 	>
 
-#### Advanced: Gathers directly after an option
+#### Дополнительно: Gathers directly after an option
 
 The following is valid, and frequently useful.
 
@@ -1184,7 +1184,7 @@ We can test global variables to control options, and provide conditional text, i
 		*	{ not knows_about_wager } 'But, Monsieur, why are we travelling?'[] I asked.
 		* 	{ knows_about_wager} I contemplated our strange adventure[]. Would it be possible?
 
-#### Advanced: storing diverts as variables
+#### Дополнительно: storing diverts as variables
 
 A "divert" statement is actually a type of value in itself, and can be stored, altered, and diverted to.
 
@@ -1196,7 +1196,7 @@ A "divert" statement is actually a type of value in itself, and can be stored, a
 	*  [Give up] 		-> current_epilogue
 
 
-#### Advanced: Global variables are externally visible
+#### Дополнительно: Global variables are externally visible
 
 Global variables can be accessed, and altered, from the runtime as well from the story, so provide a good way to communicate between the wider game and the story.
 
@@ -1235,7 +1235,7 @@ The following statements all assign values to variables:
 
 If more complex operations are required, one can write functions (for recursive formulas and the like), or call out to external, game-code functions (for anything more advanced).
 
-#### Advanced: numerical types are implicit
+#### Дополнительно: numerical types are implicit
 
 Results of operations - in particular, for division - are typed based on the type of the input. So integer division returns integer, but floating point division returns floating point results.
 
@@ -1438,7 +1438,7 @@ Temporary variables are safe to use in recursion (unlike globals), so the follow
 (In fact, this kind of definition is useful enough that **ink** provides a special kind of knot, called, imaginatively enough, a `function`, which comes with certain restrictions and can return a value. See the section below.)
 
 
-#### Advanced: sending divert targets as parameters
+#### Дополнительно: sending divert targets as parameters
 
 Knot/stitch addresses are a type of value, indicated by a `->` character, and can be stored and passed around. The following is therefore legal, and often useful:
 
@@ -1711,7 +1711,7 @@ And sometimes the numbers are useful in other ways:
 
 Constants are simply a way to allow you to give story states easy-to-understand names.  
 
-## 7) Advanced: Game-side logic
+## 7) Дополнительно: Game-side logic
 
 There are two core ways to provide game hooks in the **ink** engine. External function declarations in ink allow you to directly call C# functions in the game, and variable observers are callbacks that are fired in the game when ink variables are modified. Both of these are described in [Running your ink](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md).
 
@@ -1818,7 +1818,7 @@ Tunnels can be nested, so the following is valid:
 
 
 
-#### Advanced: Tunnels use a call-stack
+#### Дополнительно: Tunnels use a call-stack
 
 Tunnels are on a call-stack, so can safely recurse.
 
@@ -2155,7 +2155,7 @@ Note the "family name" of the state, and the variable containing a state, are to
 ... is correct.
 
 
-#### Advanced: a LIST is actually a variable
+#### Дополнительно: a LIST is actually a variable
 
 One surprising feature is the statement
 
@@ -2211,7 +2211,7 @@ You can go the other way by using the list's name as a function:
 	VAR score = one
 	~ score = Numbers(2) // score will be "two"
 
-### Advanced: defining your own numerical values
+### Дополнительно: defining your own numerical values
 
 By default, the values in a list start at 1 and go up by one each time, but you can specify your own values if you need to.
 
@@ -2382,7 +2382,7 @@ This produces:
 
 	In the surgery today are Cartwright, Denver, Eamonn.
 
-#### Advanced: nicer list printing
+#### Дополнительно: nicer list printing
 
 The basic list print is not especially attractive for use in-game. The following is better:
 
@@ -2434,7 +2434,7 @@ or
 
 Note that printing a list using `{...}` produces a bare-bones representation of the list; the values as words, delimited by commas.
 
-#### Advanced: "refreshing" a list's type
+#### Дополнительно: "refreshing" a list's type
 
 If you really need to, you can make an empty list that knows what type of list it is.
 
@@ -2447,7 +2447,7 @@ You'll then be able to do:
 
 	{ LIST_ALL(myList) }
 
-#### Advanced: a portion of the "full" list
+#### Дополнительно: a portion of the "full" list
 
 You can also retrieve just a "slice" of the full list, using the `LIST_RANGE` function.
 
