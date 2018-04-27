@@ -600,47 +600,47 @@ A fallback choice is simply a "choice without choice text":
 
 	Он рассказал мне анекдот. {!Я вежливо посмеялся.|Я улыбнулся.|Я поморщился.|Я пообещал себе больше не реагировать.}
 
-**Shuffles** (marked with a `~`):
+**Перетасовки** (отмечаются символом `~`):
 
-Shuffles produce randomised output.
+Перетасовки выдают случайный результат.
 
-	I tossed the coin. {~Heads|Tails}.
+	Я подбросил монетку. {~Орёл|Решка}.
 
-#### Features of Lists
+#### Возможности списков
 
-Lists can contain blank elements.
+Списки могут содержать пустые элементы.
 
-	I took a step forward. {!||||Then the lights went out. -> eek}
+	Я шагнул вперёд. {!||||Неожиданно погас свет. -> ой}
 
-Lists can be nested.
+Списки могут быть вложенными.
 
-	The Ratbear {&{wastes no time and |}swipes|scratches} {&at you|into your {&leg|arm|cheek}}.
+	Крысомедведь{&{, не тратя время попусту, | }ударил|царапнул} {&тебя|тебе прямо по {&ноге|руке|щеке}}.
 
-Lists can include divert statements.
+Списки могут включать переходы.
 
-	I {waited.|waited some more.|snoozed.|woke up and waited more.|gave up and left. -> leave_post_office}
+	I {подождал.|ещё подождал.|вздремнул.|проснулся и подождал ещё.|сдался и ушёл. -> уйти_из_почты}
 
-They can also be used inside choice text:
+Также их можно использовать внутри текста выбора:
 
-	+ 	"Hello, {&Master|Monsieur Fogg|you|brown-eyes}!"[] I declared.
+	+ 	"Приветствую, {&господин|месье Фогг|вас|кареглазка}!"[], воскликнул я.
 
-(...with one caveat; you can't start an option's text with a `{`, as it'll look like a conditional.)
+(...с одним предостережением; вы не можете начать текст выбора с `{`, потому что это будет понято как условие.)
 
-#### Examples
+#### Примеры
 
-Lists can be used inside loops to create the appearance of intelligent, state-tracking gameplay without particular effort.
+Списки можно использовать внутри циклов чтобы без больших усилий создавать видимость умного, управляющего своим состоянием геймплея.
 
-Here's a one-knot version of whack-a-mole. Note we use once-only options, and a fallback, to ensure the mole doesn't move around, and the game will always end.
+Вот одноузловая версия игры "Прибей крота". Обратите внимание, мы используем одноразовые варианты выбора и запасной вариант, чтобы гарантировать, что крот не будет бегать по кругу, а игра обязательно завершится.
 
-	=== whack_a_mole ===
-		{I heft the hammer.|{~Missed!|Nothing!|No good. Where is he?|Ah-ha! Got him! -> END}}
-		The {&mole|{&nasty|blasted|foul} {&creature|rodent}} is {in here somewhere|hiding somewhere|still at large|laughing at me|still unwhacked|doomed}. <>
-		{!I'll show him!|But this time he won't escape!}
-		* 	[{&Hit|Smash|Try} top-left] 	-> whack_a_mole
-		*  [{&Whallop|Splat|Whack} top-right] -> whack_a_mole
-		*  [{&Blast|Hammer} middle] -> whack_a_mole
-		*  [{&Clobber|Bosh} bottom-left] 	-> whack_a_mole
-		*  [{&Nail|Thump} bottom-right] 	-> whack_a_mole
+	=== прибей_крота ===
+		{Я взвесил в руке молоток.|{~Мимо!|Пусто!|Неудача. Где же он?|Ага! Попался! -> END}}
+		{&Крот|{&Мерзкий|Проклятый|Грязный} {&уродец|грызун}} is {где-то здесь|где-то прячется|всё ещё не пойман|смеётся надо мной|всё ещё не пристукнут|обречён}. <>
+		{!Я ему покажу!|В этот раз ему не скрыться!}
+		*  [{&Hit|Smash|Try} top-left] 	-> прибей_крота
+		*  [{&Whallop|Splat|Whack} top-right] -> прибей_крота
+		*  [{&Blast|Hammer} middle] -> прибей_крота
+		*  [{&Clobber|Bosh} bottom-left] 	-> прибей_крота
+		*  [{&Nail|Thump} bottom-right] 	-> прибей_крота
 		*  [] Then you collapse from hunger. The mole has defeated you!
 			-> END
 
