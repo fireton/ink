@@ -634,51 +634,53 @@ A fallback choice is simply a "choice without choice text":
 
 	=== прибей_крота ===
 		{Я взвесил в руке молоток.|{~Мимо!|Пусто!|Неудача. Где же он?|Ага! Попался! -> END}}
-		{&Крот|{&Мерзкий|Проклятый|Грязный} {&уродец|грызун}} is {где-то здесь|где-то прячется|всё ещё не пойман|смеётся надо мной|всё ещё не пристукнут|обречён}. <>
+		{&Крот|{&Мерзкий|Проклятый|Грязный} {&уродец|грызун}} {где-то здесь|где-то прячется|всё ещё не пойман|смеётся надо мной|всё ещё не пристукнут|обречён}. <>
 		{!Я ему покажу!|В этот раз ему не скрыться!}
-		*  [{&Hit|Smash|Try} top-left] 	-> прибей_крота
-		*  [{&Whallop|Splat|Whack} top-right] -> прибей_крота
-		*  [{&Blast|Hammer} middle] -> прибей_крота
-		*  [{&Clobber|Bosh} bottom-left] 	-> прибей_крота
-		*  [{&Nail|Thump} bottom-right] 	-> прибей_крота
-		*  [] Then you collapse from hunger. The mole has defeated you!
+		*  [{&Ударить|Шмякнуть|Попробовать} верхний левый] 	-> прибей_крота
+		*  [{&Врезать в|Засадить в|Треснуть} верхний правый] -> прибей_крота
+		*  [{&Хряснуть|Обрушиться на} середину] -> прибей_крота
+		*  [{&Залепить в|Бухнуть} нижний левый] 	-> прибей_крота
+		*  [{&Заехать в|Шибануть} нижний правый] 	-> прибей_крота
+		*  [] А потом ты свалился от голода. Крот победил тебя!
 			-> END
 
-produces the following 'game':
+в результате получим такую "игру":
 
-	I heft the hammer.
-	The mole is in here somewhere. I'll show him!
+	Я взвесил в руке молоток.
+	Крот где-то здесь. Я ему покажу!
 
-	1: Hit top-left
-	2: Whallop top-right
-	3: Blast middle
-	4: Clobber bottom-left
-	5: Nail bottom-right
+	1: Ударить верхний левый
+	2: Врезать в верхний правый
+	3: Хряснуть середину
+	4: Залепить в нижний левый
+	5: Заехать в нижний правый
 
 	> 1
-	Missed!
-	The nasty creature is hiding somewhere. But this time he won't escape!
+	Мимо!
+	Мерзкий уродец где-то прячется. В этот раз ему не скрыться!
 
-	1: Splat top-right
-	2: Hammer middle
-	3: Bosh bottom-left
-	4: Thump bottom-right
+	1: Засадить в верхний правый
+	2: Обрушиться на середину
+	3: Бухнуть нижний левый
+	4: Шибануть нижний правый
 
 	> 4
-	Nothing!
-	The mole is still at large.
-	1: Whack top-right
-	2: Blast middle
-	3: Clobber bottom-left
+	Пусто!
+
+	Крот всё ещё не пойман.
+	1: Треснуть верхний правый
+	2: Хряснуть середину
+	3: Залепить в нижний левый
 
 	> 2
-	Where is he?
-	The blasted rodent is laughing at me.
-	1: Whallop top-right
-	2: Bosh bottom-left
+	Где же он?
+
+	Проклятый грызун смеётся надо мной
+	1: Врезать в верхний правый
+	2: Бухнуть нижний левый
 
 	> 1
-	Ah-ha! Got him!
+	Ага! Попался!
 
 
 And here's a bit of lifestyle advice. Note the sticky choice - the lure of the television will never fade:
