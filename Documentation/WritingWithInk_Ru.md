@@ -587,18 +587,18 @@ A fallback choice is simply a "choice without choice text":
 
 	{Я купил кофе, заплатив пятифунтовой купюрой.|Я купил второй кофе для друга.|У меня больше не было денег на кофе.}
 
-**Cycles** (marked with a `&`):
+**Циклы** (отмечаются символом `&`):
 
-Cycles are like sequences, but they loop their content.
+Циклы похожи на последовательности, но они повторяют содержимое по кругу.
 
-	It was {&Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday} today.
+	Сегодня {&понедельник|вторник|среда|четверг|пятница|суббота|воскресенье}.
 
 
-**Once-only** (marked with a `!`):
+**"Одноразовые"** (отмечаются символом `!`):
 
-Once-only lists are like sequences, but when they run out of new content to display, they display nothing. (You can think of a once-only list as a sequence with a blank last entry.)
+Одноразовые списки похожи на последовательности, но когда у них заканчиваются элементы, они просто ничего не выводят. (Можете думать о них, как о последовательностях с пустым последним элементом.)
 
-	He told me a joke. {!I laughed politely.|I smiled.|I grimaced.|I promised myself to not react again.}
+	Он рассказал мне анекдот. {!Я вежливо посмеялся.|Я улыбнулся.|Я поморщился.|Я пообещал себе больше не реагировать.}
 
 **Shuffles** (marked with a `~`):
 
@@ -828,7 +828,7 @@ We can string these gather-and-branch sections together to make branchy sequence
 
 This is the most basic kind of weave. The rest of this section details  additional features that allow weaves to nest, contain side-tracks and diversions, divert within themselves, and above all, reference earlier choices to influence later ones.
 
-#### The weave philsophy
+#### The weave philosophy
 
 Weaves are more than just a convenient encapsulation of branching flow; they're also a way to author more robust content. The `escape` example above has already four possible routes through, and a more complex sequence might have lots and lots more. Using normal diverts, one has to check the links by chasing the diverts from point to point and it's easy for errors to creep in.
 
