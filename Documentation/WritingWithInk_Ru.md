@@ -683,48 +683,45 @@ A fallback choice is simply a "choice without choice text":
 	Ага! Попался!
 
 
-And here's a bit of lifestyle advice. Note the sticky choice - the lure of the television will never fade:
+А вот небольшой совет по образу жизни. Обратите внимание на липкий вариант выбора - телевиденье всегда соблазнительно:
 
-	=== turn_on_television ===
-	I turned on the television {for the first time|for the second time|again|once more}, but there was {nothing good on, so I turned it off again|still nothing worth watching|even less to hold my interest than before|nothing but rubbish|a program about sharks and I don't like sharks|nothing on}.
-	+	[Try it again]	 		-> turn_on_television
-	*	[Go outside instead]	-> go_outside_instead
+	=== включить_телевизор ===
+	Я {в первый раз|во второй раз|опять|ещё раз} включил телевизор, но там {не было ничего интересного, так что я снова выключил его|всё ещё не было ничего достойного|было ещё меньше интересного, чем раньше|показывали всякую фигню|была програма про акул, а я не люблю акул|ничего не было}.
+	+	[Попытаться ещё раз]	-> включить_телевизор
+	*	[Пойти прогуляться]		-> пойти_прогуляться
 
-    === go_outside_instead ===
+    === пойти_прогуляться ===
     -> END
 
 
 
-#### Дополнительно: Multiline lists
-**ink** has another format for making lists of varying content blocks, too. See the section on "multiline blocks" for details.
+#### Дополнительно: Многострочные списки
+Также, в **ink** есть другой формат описания списков для изменения блоков текста. Смотри главу "многострочные блоки" для более подробной информации.
 
+### Условный текст
 
+Текст может также меняться на основания логических проверок, точно также, как и варианты выбора.
 
-### Conditional Text
+	{встретил_блофельда: "Я видел его. Лишь на мгновение." }
 
-Text can also vary depending on logical tests, just as options can.
+и
+	"Его настоящее имя {встретил_блофельда.узнал_его_имя: Франц|осталось в секрете}."
 
-	{met_blofeld: "I saw him. Only for a moment." }
+Такие условия могут располагаться на разных строках или внутри одной части текста. Они даже могут быть вложены друг в друга:
 
-and
+	{встретил_блофельда: "Я видел его. Лишь на мгновение. Его настоящее имя {встретил_блофельда.узнал_его_имя: Франц|осталось в секрете}." | "Я упустил его. Это какой-то особенно злой человек?" }
 
-	"His real name was {met_blofeld.learned_his_name: Franz|a secret}."
+может выдать либо:
 
-These can appear as separate lines, or within a section of content. They can even be nested, so:
+	"Я видел его. Лишь на мгновение. Его настоящее имя Франц."
 
-	{met_blofeld: "I saw him. Only for a moment. His real name was {met_blofeld.learned_his_name: Franz|kept a secret}." | "I missed him. Was he particularly evil?" }
+или:
 
-can produce either:
+	"Я видел его. Лишь на мгновение. Его настоящее имя осталось в секрете."
 
-	"I saw him. Only for a moment. His real name was Franz."
+или же:
 
-or:
-
-	"I saw him. Only for a moment. His real name was kept a secret."
-
-or:
-
-	"I missed him. Was he particularly evil?"
+	"Я упустил его. Это какой-то особенно злой человек?"
 
 ## 7) Game Queries
 
