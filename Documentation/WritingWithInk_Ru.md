@@ -12,7 +12,7 @@
 
 Также **ink** задумывался с учётом переписывания историй, так что правка должна быть простой и быстрой.
 
-# Часть первая: Основы
+# Часть 1: Основы
 
 ## 1) Содержимое
 
@@ -723,87 +723,85 @@ A fallback choice is simply a "choice without choice text":
 
 	"Я упустил его. Это какой-то особенно злой человек?"
 
-## 7) Game Queries
+## 7) Запросы состояния игры
 
-**ink** provides a few useful 'game level' queries about game state, for use in conditional logic. They're not quite parts of the language, but they're always available, and they can't be edited by the author. In a sense, they're the "standard library functions" of the language.
+**ink** предоставляет несколько полезных запросов уровня игры в целом, которые можно использовать в логике условий. Они не вполне часть языка как такового, но они всегда доступны и автор игры не может их редактировать. В каком-то смысле, это "функции стандартной библиотеки" языка.
 
-The convention is to name these in capital letters.
+По соглашению их имена записываются прописными буквами.
 
 ### CHOICE_COUNT
 
-`CHOICE_COUNT` returns the number of options created so far in the current chunk. So for instance.
+`CHOICE_COUNT` возвращает количество вариантов выбора, созданных на настоящий момент в текущем куске игры. Вот например:
 
-	*	{false} Option A
-	* 	{true} Option B
-	*  {CHOICE_COUNT() == 1} Option C
+	*	{false} Вариант А
+	* 	{true} Вариант Б
+	*  {CHOICE_COUNT() == 1} Вариант В
 
-produces two options, B and C. This can be useful for controlling how many options a player gets on a turn.
+создаст два выбора - Б и В. Это может быть полезным для контроля за тем, сколько вариантов выбора игрок получит в конкретный ход.
 
 ### TURNS_SINCE
 
-`TURNS_SINCE` returns the number of moves (formally, player inputs) since a particular knot/stitch was last visited.
+`TURNS_SINCE` возвращает количество ходов (формально, взаимодействий с игроком) с того момента, когда последний раз был посещён конкретный узел/стежок.
 
-A value of 0 means "was seen as part of the current chunk". A value of -1 means "has never been seen". Any other positive value means it has been seen that many turns ago.
+Значение 0 означает "был виден как часть текущего хода". Значение -1 означает "никогда не посещался". Любое другое положительное значение означает сколько ходов назад был виден элемент.
 
-	*	{TURNS_SINCE(-> sleeping.intro) > 10} You are feeling tired... -> sleeping
-	* 	{TURNS_SINCE(-> laugh) == 0}  You try to stop laughing.
+	*	{TURNS_SINCE(-> сон.интро) > 10} Ты чувствуешь себя уставшим... -> спать
+	* 	{TURNS_SINCE(-> смех) == 0}  Ты пытаешься перестать смеяться.
 
-Note that the parameter passed to `TURNS_SINCE` is a "divert target", not simply the knot address itself (because the knot address is a number - the read count - not a location in the story...)
+Обратите внимание, что параметр, переданный в `TURNS_SINCE` является "целью перехода" (со стрелкой `->`), а не просто названием узла (потому что адрес узла/стежка это число, количество посещений, а не место в повествовании...)
 
-TODO: (requirement of passing `-c` to the compiler)
+#### Дополнительно: ещё запросы
 
-#### Дополнительно: more queries
+Вы можете создавать свои внешние функции, хотя их синтаксис будет несколько отличаться: см. в разделе про функции ниже.
 
-You can make your own external functions, though the syntax is a bit different: see the section on functions below.
+# Часть 2: Сплетения
 
+До сих пор мы писали ветвящиеся истории, используя простейший путь - "варианты выбора", которые ведут на "страницы".
 
-# Part 2: Weave
+Но такой подход требует от нас давать уникальные имена каждому месту в истории, на который можно перейти. Что замедляет процесс письма и отвращает от мелких ветвлений.
 
-So far, we've been building branched stories in the simplest way, with "options" that link to "pages".
+В **ink** есть намного более мощные средства написания, задуманные с целью упрощения потока повествования, который имеет однонаправленное движение "только вперёд" (как и бывает в большинстве историй, но *не бывает* в большинстве компьютерных программ).
 
-But this requires us to uniquely name every destination in the story, which can slow down writing and discourage minor branching.
+Этот формат называется "сплетение" и он был создан на основе базового синтаксиса текста/выборов с двумя новыми возможностями: символа сборки `-` и вложенности выборов и сборок.
 
-**ink** has a much more powerful syntax available, designed for simplifying story flows which have an always-forwards direction (as most stories do, and most computer programs don't).
+## 1) Сборки
 
-This format is called "weave", and its built out of the basic content/option syntax with two new features: the gather mark, `-`, and the nesting of choices and gathers.
+### Сборки собирают потоки повествования снова вместе
 
-## 1) Gathers
+Давайте вернёмся к первому примеру множественного выбора в начале этого документа.
 
-### Gather points gather the flow back together
+	"В чём дело?" - спросил мой господин.
+	*	"Я несколько устал[."]", повторил я.
+		"В самом деле" - сказал он. "Как разрушительно."
+	*	"Ни в чём, месье!"[] - ответил я.
+		"Что ж, очень хорошо."
+	*	"Я говорю, это путешествие отвратительно[."] и я не хочу больше в нём участвовать."
+		"А", ответил он без раздражения. "Я вижу, ты раздосадован. Завтра всё наладится."
+		
+В настоящей игре, все эти три варианта выбора ведут к одному и тому же заключению - месье Фогг выходит из комнаты. Мы можем сделать это, используя сборку, без необходимости создания новых узлов или добавления новых переходов.
 
-Let's go back to the first multi-choice example at the top of this document.
+	"В чём дело?" - спросил мой господин.
+	*	"Я несколько устал[."]", повторил я.
+		"В самом деле" - сказал он. "Как разрушительно."
+	*	"Ни в чём, месье!"[] - ответил я.
+		"Что ж, очень хорошо."
+	*	"Я говорю, это путешествие отвратительно[."] и я не хочу больше в нём участвовать."
+		"А", ответил он без раздражения. "Я вижу, ты раздосадован. Завтра всё наладится."
 
-	"What's that?" my master asked.
-		*	"I am somewhat tired[."]," I repeated.
-			"Really," he responded. "How deleterious."
-		*	"Nothing, Monsieur!"[] I replied.
-		*  "I said, this journey is appalling[."] and I want no more of it."
-			"Ah," he replied, not unkindly. "I see you are feeling frustrated. Tomorrow, things will improve."
+	-	С этим месье Фогг вышел из комнаты.
 
-In a real game, all three of these options might well lead to the same conclusion - Monsieur Fogg leaves the room. We can do this using a gather, without the need to create any new knots, or add any diverts.
+Этот скрипт выдаст следующий результат:
 
-	"What's that?" my master asked.
-		*	"I am somewhat tired[."]," I repeated.
-			"Really," he responded. "How deleterious."
-		*	"Nothing, Monsieur!"[] I replied.
-			"Very good, then."
-		*  "I said, this journey is appalling[."] and I want no more of it."
-		"Ah," he replied, not unkindly. "I see you are feeling frustrated. Tomorrow, things will improve."
+	"В чём дело?" - спросил мой господин.
 
-	-	With that Monsieur Fogg left the room.
-
-This produces the following playthrough:
-
-	"What's that?" my master asked.
-
-	1: "I am somewhat tired."
-	2: "Nothing, Monsieur!"
-	3: "I said, this journey is appalling."
-
+	1: "Я несколько устал."
+	2: "Ни в чём, месье!"
+	3: "Я говорю, это путешествие отвратительно."
+	
 	> 1
-	"I am somewhat tired," I repeated.
-	"Really," he responded. "How deleterious."
-	With that Monsieur Fogg left the room.
+	"Я несколько устал", повторил я.
+	"В самом деле" - сказал он. "Как разрушительно."
+	С этим месье Фогг вышел из комнаты.
 
 ### Options and gathers form chains of content
 
