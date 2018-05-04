@@ -734,8 +734,8 @@ A fallback choice is simply a "choice without choice text":
 `CHOICE_COUNT` возвращает количество вариантов выбора, созданных на настоящий момент в текущем куске игры. Вот например:
 
 	*	{false} Вариант А
-	* 	{true} Вариант Б
-	*  {CHOICE_COUNT() == 1} Вариант В
+	*	{true} Вариант Б
+	*	{CHOICE_COUNT() == 1} Вариант В
 
 создаст два выбора - Б и В. Это может быть полезным для контроля за тем, сколько вариантов выбора игрок получит в конкретный ход.
 
@@ -746,7 +746,7 @@ A fallback choice is simply a "choice without choice text":
 Значение 0 означает "был виден как часть текущего хода". Значение -1 означает "никогда не посещался". Любое другое положительное значение означает сколько ходов назад был виден элемент.
 
 	*	{TURNS_SINCE(-> сон.интро) > 10} Ты чувствуешь себя уставшим... -> спать
-	* 	{TURNS_SINCE(-> смех) == 0}  Ты пытаешься перестать смеяться.
+	*	{TURNS_SINCE(-> смех) == 0}  Ты пытаешься перестать смеяться.
 
 Обратите внимание, что параметр, переданный в `TURNS_SINCE` является "целью перехода" (со стрелкой `->`), а не просто названием узла (потому что адрес узла/стежка это число, количество посещений, а не место в повествовании...)
 
@@ -803,7 +803,7 @@ A fallback choice is simply a "choice without choice text":
 	"В самом деле" - сказал он. "Как разрушительно."
 	С этим месье Фогг вышел из комнаты.
 
-### Options and gathers form chains of content
+### Выборы и сборки формируют цепочки повествования
 
 We can string these gather-and-branch sections together to make branchy sequences that always run forwards.
 
@@ -816,7 +816,7 @@ We can string these gather-and-branch sections together to make branchy sequence
 
 		*	I cheered with joy. <>
 
-	- 	The road could not be much further! Mackie would have the engine running, and then I'd be safe.
+	-	The road could not be much further! Mackie would have the engine running, and then I'd be safe.
 
 		*	I reached the road and looked about[]. And would you believe it?
 		* 	I should interrupt to say Mackie is normally very reliable[]. He's never once let me down. Or rather, never once, previously to that night.
