@@ -618,7 +618,7 @@ A fallback choice is simply a "choice without choice text":
 
 Списки могут включать переходы.
 
-	I {подождал.|ещё подождал.|вздремнул.|проснулся и подождал ещё.|сдался и ушёл. -> уйти_из_почты}
+	Я {подождал.|ещё подождал.|вздремнул.|проснулся и подождал ещё.|сдался и ушёл. -> уйти_из_почты}
 
 Также их можно использовать внутри текста выбора:
 
@@ -805,81 +805,80 @@ A fallback choice is simply a "choice without choice text":
 
 ### Выборы и сборки формируют цепочки повествования
 
-We can string these gather-and-branch sections together to make branchy sequences that always run forwards.
+Мы можем связать эти секции "ветвление-и-сборка" вместе чтобы создать ветвящиеся последовательности, которые всегда двигаются вперёд.
 
-	=== escape ===
-	I ran through the forest, the dogs snapping at my heels.
+	=== побег ===
+	Я бежал сквозь лес, а собаки хватали меня за пятки.
 
-		* 	I checked the jewels[] were still in my pocket, and the feel of them brought a spring to my step. <>
+		*	Я проверил бриллианты. [] Они были на месте, в кармане, и осознание этого подстегнуло мой бег. <>
 
-		*  I did not pause for breath[] but kept on running. <>
+		*	Я не стал останавливаться, чтобы передохнуть[.] и продолжил бежать. <>
 
-		*	I cheered with joy. <>
+		*	Я вскрикнул от радости. <>
 
-	-	The road could not be much further! Mackie would have the engine running, and then I'd be safe.
+	-	Дорога уже недалеко! Маки должен держать двигатель включённым, и я скоро буду в безопасности.
 
-		*	I reached the road and looked about[]. And would you believe it?
-		* 	I should interrupt to say Mackie is normally very reliable[]. He's never once let me down. Or rather, never once, previously to that night.
+		*	Я добежал до дороги и огляделся []. И что бы вы думали?
+		* 	Я должен сказать, что Маки обычно очень надёжный человек[]. Он никогда не подводил меня. Или, точнее, никогда раньше до этой ночи.
 
-	-	The road was empty. Mackie was nowhere to be seen.
+	-	Дорога была пуста. Маки нигде не было видно.
 
-This is the most basic kind of weave. The rest of this section details  additional features that allow weaves to nest, contain side-tracks and diversions, divert within themselves, and above all, reference earlier choices to influence later ones.
+Это самый основной тип сплетения. Дальше в этой главе описаны дополнительные возможности, которые позволяют сплетениям быть вложенными, содержать обходные пути и ответвления, разветвляться внутри себя, и, помимо всего, ссылаться на ранее сделанные решения, чтобы влиять на более поздние.
 
-#### The weave philosophy
+#### Философия сплетений
 
-Weaves are more than just a convenient encapsulation of branching flow; they're also a way to author more robust content. The `escape` example above has already four possible routes through, and a more complex sequence might have lots and lots more. Using normal diverts, one has to check the links by chasing the diverts from point to point and it's easy for errors to creep in.
+Сплетения - это нечто большее, чем просто удобная инкапсуляция ветвящихся потоков. Они также позволяют писать более сложный текст. Пример `побег` выше уже можно пройти четырьмя возможными путями, а более сложные последовательности привнесут намного больше таких путей. Используя обычные переходы, автору приходится проверять ссылки, отслеживая переходы от точки до точки, и тут легко может вкрасться ошибка.
 
-With a weave, the flow is guaranteed to start at the top and "fall" to the bottom. Flow errors are impossible in a basic weave structure, and the output text can be easily skim read. That means there's no need to actually test all the branches in game to be sure they work as intended.
+Со сплетением, повествование гарантированно начнётся с вершины и "ниспадёт" до самого низа. Ошибки в потоке невозможны в базовой структуре сплетения, а получающийся текст легко отследить, "скользя" по структуре. Это означает, что, в действительности, нет необходимости тестировать все ветви в игре, чтобы убедиться, что они работают так, как задумывалось.
 
-Weaves also allow for easy redrafting of choice-points; in particular, it's easy to break a sentence up and insert additional choices for variety or pacing reasons, without having to re-engineer any flow.
+Сплетения также позволяют с лёгкостью переписывать поворотные точки повествования. В частности, очень легко разбить предложение и вставить дополнительные варианты выбора для разнообразия или чтобы дать игроку дополнительную пищу для решений, и всё это без полной переделки повествования в целом.
 
+## 2) Вложенные потоки
 
-## 2) Nested Flow
+Сплетения, упоминавшиеся выше, имеют довольно простую, "плоскую" структуру. Что бы игрок ни делал, им требуется одинаковое количество ходов для прохождения. Однако, иногда определённые выборы приводят к чуть большей глубине или сложности.
 
-The weaves shown above are quite simple, "flat" structures. Whatever the player does, they take the same number of turns to get from top to bottom. However, sometimes certain choices warrant a bit more depth or complexity.
+Для этого мы позволяем сплетениям быть вложенными.
 
-For that, we allow weaves to nest.
+Тут следует предупреждение. Вложенные сплетения очень мощное и компактное средство, но они могут потребовать усилий для освоения!
 
-This section comes with a warning. Nested weaves are very powerful and very compact, but they can take a bit of getting used to!
+### Варианты выбора можно вкладывать
 
-### Options can be nested
+Рассмотрим следующую сцену:
 
-Consider the following scene:
+	- 	"Итак, Пуаро? Убийство или самоубийство?"
+	*	"Убийство!"
+	* 	"Самоубийство!"
+	-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
-	- 	"Well, Poirot? Murder or suicide?"
-	*	"Murder!"
-	* 	"Suicide!"
-	-	Ms. Christie lowered her manuscript a moment. The rest of the writing group sat, open-mouthed.
+Первый предоставленный выбор - между "Убийство!" и "Самоубийство!". Если Пуаро провозгласит самоубийство, то дальнейших действий не предвидится, но в случае убийства необходимо задать следующий вопрос - кого он подозревает?
 
-The first choice presented is "Murder!" or "Suicide!". If Poirot declares a suicide, there's no more to do, but in the case of murder, there's a follow-up question needed - who does he suspect?
+Мы можем добавить варианты через набор вложенных под-выборов. Мы говорим скрипту что новые варианты являются частью другого выбора с помощью двух звёздочек вместо одной.
 
-We can add new options via a set of nested sub-choices. We tell the script that these new choices are "part of" another choice by using two asterisks, instead of just one.
+	- 	"Итак, Пуаро? Убийство или самоубийство?"
+		*	"Убийство!"
+		 	"И кто сделал это?"
+			* * 	"Детектив-инспектор Джапп!"
+			* * 	"Капитан Хастингз!"
+			* * 	"Я сам!"
+		* 	"Самоубийство!"
+		-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
+(Обратите внимание, что хорошим стилем будет также отбить строки, чтобы показать вложенность, хотя компилятору всё равно.)
 
-	- 	"Well, Poirot? Murder or suicide?"
-		*	"Murder!"
-		 	"And who did it?"
-			* * 	"Detective-Inspector Japp!"
-			* * 	"Captain Hastings!"
-			* * 	"Myself!"
-		* 	"Suicide!"
-		-	Mrs. Christie lowered her manuscript a moment. The rest of the writing group sat, open-mouthed.
+И, если мы захотим добавить под-выборов в другую ветку, мы сделаем это похожим образом.
 
-(Note that it's good style to also indent the lines to show the nesting, but the compiler doesn't mind.)
+	- 	"Итак, Пуаро? Убийство или самоубийство?"
+		*	"Убийство!"
+		 	"И кто сделал это?"
+			* *	"Детектив-инспектор Джапп!"
+			* *	"Капитан Хастингз!"
+			* *	"Я сам!"
+		* 	"Самоубийство!"
+			"Действительно, Пуаро? Вы полностью уверены?"
+			* *	"Весьма уверен."
+			* *	"Это совершенно очевидно."
+		-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
-And should we want to add new sub-options to the other route, we do that in similar fashion.
-
-	- 	"Well, Poirot? Murder or suicide?"
-		*	"Murder!"
-		 	"And who did it?"
-			* * 	"Detective-Inspector Japp!"
-			* * 	"Captain Hastings!"
-			* * 	"Myself!"
-		* 	"Suicide!"
-			"Really, Poirot? Are you quite sure?"
-			* * 	"Quite sure."
-			* *		"It is perfectly obvious."
-		-	Mrs. Christie lowered her manuscript a moment. The rest of the writing group sat, open-mouthed.
 
 Now, that initial choice of accusation will lead to specific follow-up questions - but either way, the flow will come back together at the gather point, for Mrs. Christie's cameo appearance.
 
@@ -889,20 +888,20 @@ But what if we want a more extended sub-scene?
 
 Sometimes, it's not a question of expanding the number of options, but having more than one additional beat of story. We can do this by nesting gather points as well as options.
 
-	- 	"Well, Poirot? Murder or suicide?"
-			*	"Murder!"
-			 	"And who did it?"
-				* * 	"Detective-Inspector Japp!"
-				* * 	"Captain Hastings!"
-				* * 	"Myself!"
+	- 	"Итак, Пуаро? Убийство или самоубийство?"
+			*	"Убийство!"
+			 	"И кто сделал это?"
+				* * 	"Детектив-инспектор Джапп!"
+				* * 	"Капитан Хастингз!"
+				* * 	"Я сам!"
 				- - 	"You must be joking!"
 				* * 	"Mon ami, I am deadly serious."
 				* *		"If only..."
-			* 	"Suicide!"
-				"Really, Poirot? Are you quite sure?"
-				* * 	"Quite sure."
-				* *		"It is perfectly obvious."
-			-	Mrs. Christie lowered her manuscript a moment. The rest of the writing group sat, open-mouthed.
+			* 	"Самоубийство!"
+				"Действительно, Пуаро? Вы полностью уверены?"
+				* * 	"Весьма уверен."
+				* *		"Это совершенно очевидно."
+			-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
 If the player chooses the "murder" option, they'll have two choices in a row on their sub-branch - a whole flat weave, just for them.
 
