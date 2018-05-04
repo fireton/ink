@@ -1208,9 +1208,34 @@ The value of a variable can be printed as content using an inline syntax similar
 	VAR friendly_name_of_player = "Jackie"
 	VAR age = 23
 
-	"My name is Jean Passepartout, but my friend's call me {friendly_name_of_player}. I'm {age} years old."
+	My name is Jean Passepartout, but my friend's call me {friendly_name_of_player}. I'm {age} years old.
 
 This can be useful in debugging. For more complex printing based on logic and variables, see the section on functions.
+
+### Evaluating strings
+
+It might be noticed that above we refered to variables as being able to contain "content", rather than "strings". That was deliberate, because a string defined in ink can contain ink - although it will always evaluate to a string. (Yikes!)
+
+	VAR a_colour = ""
+
+	~ a_colour = "{~red|blue|green|yellow}" 
+	
+	{a_colour} 
+	
+... produces one of red, blue, green or yellow. 
+
+Note that once a piece of content like this is evaluated, its value is "sticky". (The quantum state collapses.) So the following:
+
+	The goon hits you, and sparks fly before you eyes, {a_colour} and {a_colour}.
+	
+... won't produce a very interesting effect. (If you really want this to work, use a text function to print the colour!)
+
+This is also why 
+
+	VAR a_colour = "{~red|blue|green|yellow}"
+
+is explicitly disallowed; it would be evaluated on the construction of the story, which probably isn't what you want.
+
 
 ## 2) Logic
 
@@ -1226,11 +1251,17 @@ The following statements all assign values to variables:
 		~ x = (x * x) - (y * y) + c
 		~ y = 2 * x * y
 
+and the following will test conditions:
+
+	{ x == 1.2 }
+	{ x / 2 > 4 }
+	{ y - 1 <= x * x }
+	
 ### Mathematics
 
 **ink** supports the four basic mathematical operations (`+`, `-`, `*` and `/`), as well as `%` (or `mod`), which returns the remainder after integer division.
 
-If more complex operations are required, one can write functions (for recursive formulas and the like), or call out to external, game-code functions (for anything more advanced).
+If more complex operations are required, one can write functions (using recursion if necessary), or call out to external, game-code functions (for anything more advanced). 
 
 #### Дополнительно: numerical types are implicit
 
@@ -1241,6 +1272,17 @@ Results of operations - in particular, for division - are typed based on the typ
 	~ z = 1.2 / 0.5
 
 assigns `x` to be 0, `y` to be 2 and `z` to be 2.4.
+
+### String queries
+
+Oddly for a text-engine, **ink** doesn't have much in the way of string-handling: it's assumed that any string conversion you need to do will be handled by the game code (and perhaps by external functions.) But we support three basic queries - equality, inequality, and substring (which we call ? for reasons that will become clear in a later chapter). 
+
+The following all return true:
+	
+	{ "Yes, please." == "Yes, please." }
+	{ "No, thank you." != "Yes, please." }
+	{ "Yes, please" ? "ease" }
+	
 
 ## 3) Conditional blocks (if/else)
 
@@ -1389,9 +1431,7 @@ Sometimes, a global variable is unwieldy. **ink** provides temporary variables f
 			That night I was colder than I have ever been.
 		}
 
-The value in a temporary variable is thrown away after the story leaves the knot in which it was defined.
-
-TODO: check this is actually true
+The value in a temporary variable is thrown away after the story leaves the stitch in which it was defined. 
 
 ### Knots and stitches can take parameters
 
@@ -1410,7 +1450,7 @@ A particularly useful form of temporary variable is a parameter. Any knot or sti
 		"And why not?" Poirot shot back. 	
 
 
-
+... and you'll need to use parameters if you want to pass a temporary value from one stitch to another!	
 
 #### Example: a recursive knot definition
 
@@ -1708,7 +1748,7 @@ And sometimes the numbers are useful in other ways:
 
 Constants are simply a way to allow you to give story states easy-to-understand names.  
 
-## 7) Дополнительно: Game-side logic
+## 7) Дополнительно: Game-side logic 
 
 There are two core ways to provide game hooks in the **ink** engine. External function declarations in ink allow you to directly call C# functions in the game, and variable observers are callbacks that are fired in the game when ink variables are modified. Both of these are described in [Running your ink](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md).
 
@@ -2600,7 +2640,7 @@ was not only functional, but actually caused list to invert itself, which seemed
 
 ### Intersecting lists
 
-The `has` or `?` operator is, somewhat more formally, the "are you a subset of me" operator, ⊇, which includes the sets being equal, but which doesn't include if the larger set doesn't entirely contain the smaller set.
+The `has` or `?` operator is, somewhat more formally, the "are you a subset of me" operator, ⊇, which includes the sets being equal, but which doesn't include if the larger set doesn't entirely contain the smaller set. 
 
 To test for "some overlap" between lists, we use the overlap operator, `^`, to get the *intersection*.
 
