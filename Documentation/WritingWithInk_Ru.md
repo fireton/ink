@@ -880,13 +880,13 @@ A fallback choice is simply a "choice without choice text":
 		-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
 
-Now, that initial choice of accusation will lead to specific follow-up questions - but either way, the flow will come back together at the gather point, for Mrs. Christie's cameo appearance.
+Теперь первоначальный выбор обвинения приведёт к последующим вопросам, специфичным для этой ветки, но в любом случае повествование сойдётся в точке сборки, где мы увидим появление миссис Кристи в роли камео.
 
-But what if we want a more extended sub-scene?
+Но что, если мы хотим более развёрнутую подсцену?
 
-### Gather points can be nested too
+### Точки сборки тоже могут быть вложенными
 
-Sometimes, it's not a question of expanding the number of options, but having more than one additional beat of story. We can do this by nesting gather points as well as options.
+Иногда речь идет не о расширении количества вариантов выбора, а о том, чтобы создать ещё один дополнительный такт в истории. Мы можем сделать это, вкладывая точки сборки точно также, как мы делали с вариантами выбора.
 
 	- 	"Итак, Пуаро? Убийство или самоубийство?"
 			*	"Убийство!"
@@ -894,63 +894,62 @@ Sometimes, it's not a question of expanding the number of options, but having mo
 				* * 	"Детектив-инспектор Джапп!"
 				* * 	"Капитан Хастингз!"
 				* * 	"Я сам!"
-				- - 	"You must be joking!"
-				* * 	"Mon ami, I am deadly serious."
-				* *		"If only..."
+				- - 	"Вы, должно быть, шутите!"
+				* * 	"Мон ами, я в высшей степени серьёзен."
+				* *		"Если б только..."
 			* 	"Самоубийство!"
 				"Действительно, Пуаро? Вы полностью уверены?"
 				* * 	"Весьма уверен."
 				* *		"Это совершенно очевидно."
 			-	Миссис Кристи на секунду опустила манускрипт. Остальная группа писателей осталась сидеть с открытым ртом.
 
-If the player chooses the "murder" option, they'll have two choices in a row on their sub-branch - a whole flat weave, just for them.
+Если игрок выберет ветку с убийством, то ему придётся сделать два выбора, один за другим - целое отдельное сплетение, созданное специально для них.
 
-#### Дополнительно: What gathers do
+#### Дополнительно: Что делают сборки
 
-Gathers are hopefully intuitive, but their behaviour is a little harder to put into words: in general, after an option has been taken, the story finds the next gather down that isn't on a lower level, and diverts to it.
+Будем надеяться, сборки интуитивно понятны, но их поведение немного трудно описать словами: в целом, после того, как игрок сделал выбор, история находит следующую сборку ниже, на том же или более высоком уровне, и переходит на неё.
 
-The basic idea is this: options separate the paths of the story, and gathers bring them back together. (Hence the name, "weave"!)
+Основная идея такова: выборы разделяют пути истории, а сборки сводят их обратно вместе. (Отсюда и название "сплетение"!)
 
+### Вы можете вкладывать столько уровней, сколько захотите
 
-### You can nest as many levels are you like
+В примерах выше мы использовали два уровня вложенности: главный поток и второстепенный. Но нет никаких ограничений на то, насколько уровней в глубину вы можете пойти.
 
-Above, we used two levels of nesting; the main flow, and the sub-flow. But there's no limit to how many levels deep you can go.
+	-	"Расскажи нам историю, Капитан!"
+		*	"Хорошо, морские волки. Вот история..."
+			* * 	"Была тёмная и ненастная ночь..."
+					* * * 	"...команда беспокоилась..."
+							* * * *  "...и тогда они сказали своему капитану..."
+									* * * * *		"...Расскажи нам историю, Капитан!"
+		*	"Нет, уже поздно и пора спать."
+ 	-	Команда, все до одного, начала зевать.
 
-	-	"Tell us a tale, Captain!"
-		*	"Very well, you sea-dogs. Here's a tale..."
-			* * 	"It was a dark and stormy night..."
-					* * * 	"...and the crew were restless..."
-							* * * *  "... and they said to their Captain..."
-									* * * * *		"...Tell us a tale Captain!"
-		*	"No, it's past your bed-time."
- 	-	To a man, the crew began to yawn.
+Спустя время, это вкладывание становится трудно читать и править, так что хорошим стилем будет сделать переход на отдельный стежок, если такая ветка становится слишком громоздкой.
 
-After a while, this sub-nesting gets hard to read and manipulate, so it's good style to divert away to a new stitch if a side-choice goes unwieldy.
+Но вы можете написать историю целиком внутри одного сплетения, по крайней мере в теории. 
 
-But, in theory at least, you could write your entire story as a single weave.
+### Пример: диалог, использующий вложенные узлы
 
-### Example: a conversation with nested nodes
+Вот пример подлиннее:
 
-Here's a longer example:
-
-	- I looked at Monsieur Fogg
-	*	... and I could contain myself no longer.
-		'What is the purpose of our journey, Monsieur?'
-		'A wager,' he replied.
-		* * 	'A wager!'[] I returned.
-				He nodded.
-				* * * 	'But surely that is foolishness!'
-				* * *  'A most serious matter then!'
-				- - - 	He nodded again.
-				* * *	'But can we win?'
-						'That is what we will endeavour to find out,' he answered.
-				* * *	'A modest wager, I trust?'
-						'Twenty thousand pounds,' he replied, quite flatly.
-				* * * 	I asked nothing further of him then[.], and after a final, polite cough, he offered nothing more to me. <>
-		* * 	'Ah[.'],' I replied, uncertain what I thought.
-		- - 	After that, <>
-	*	... but I said nothing[] and <>
-	- we passed the day in silence.
+	- Я взглянул на месье Фогга
+	*	... и не смог больше сдерживаться.
+		"Какова цель нашего путешествия, Месье?"
+		"Пари", ответил он.
+		* * 	"Пари!"[] - повторил я.
+				Он кивнул.
+				* * *	"Но это же сущая глупость!"
+				* * *	"Это серьёзное дело!"
+				- - -	Он кивнул снова.
+				* * *	"Но можем ли мы победить?"
+						"Мы приложим максимум усилий, чтобы выяснить это", ответил он.
+				* * *	"Скромное пари, я думаю?"
+						"Двадцать тысяч фунтов", ответил он довольно ровно.
+				* * *	Я решил больше не спрашивать ничего[.], и, даже после последнего вежливого покашливания, он так и не объяснил мне ничего. <>
+		* * 	"А[."]," ответил я, не зная что сказать.
+		- - 	После этого, <>
+	*	... но ничего не сказал[] и <>
+	- мы провели остаток дня в молчании.
 	- -> END
 
 with a couple of possible playthroughs. A short one:
@@ -1327,7 +1326,7 @@ And using this form we can include 'else-if' conditions:
 
 (Note, as with everything else, the white-space is purely for readability and has no syntactic meaning.)
 
-#### Example: context-relevant content
+#### Пример: context-relevant content
 
 Note these tests don't have to be variable-based and can use read-counts, just as other conditionals can, and the following construction is quite frequent, as a way of saying "do some content which is relevant to the current game state":
 
@@ -1451,7 +1450,7 @@ A particularly useful form of temporary variable is a parameter. Any knot or sti
 
 ... and you'll need to use parameters if you want to pass a temporary value from one stitch to another!	
 
-#### Example: a recursive knot definition
+#### Пример: a recursive knot definition
 
 Temporary variables are safe to use in recursion (unlike globals), so the following will work.
 
@@ -1605,7 +1604,7 @@ produces:
 	The maximum of 2^5 and 3^3 is 32.
 
 
-#### Example: turning numbers into words
+#### Пример: turning numbers into words
 
 The following example is long, but appears in pretty much every inkle game to date. (Recall that a hyphenated line inside multiline curly braces indicates either "a condition to test" or, if the curly brace began with a variable, "a value to compare against".)
 
@@ -1980,7 +1979,7 @@ Note that we don't need a `-> DONE` if the flow ends with options that fail thei
 Using `-> END` in this case will not end the thread, but the whole story flow. (And this is the real reason for having two different ways to end flow.)
 
 
-#### Example: adding the same choice to several places
+#### Пример: adding the same choice to several places
 
 Threads can be used to add the same choice into lots of different places. When using them this way, it's normal to pass a divert as a parameter, to tell the story where to go after the choice is done.
 
@@ -2031,7 +2030,7 @@ might do exactly the same thing as:
 but as soon as the option being threaded in includes multiple choices, or conditional logic on choices (or any text content, of course!), the thread version becomes more practical.
 
 
-#### Example: organisation of wide choice points
+#### Пример: organisation of wide choice points
 
 A game which uses ink as a script rather than a literal output might often generate very large numbers of parallel choices, intended to be filtered by the player via some other in-game interaction - such as walking around an environment. Threads can be useful in these cases simply to divide up choices.
 
@@ -2363,7 +2362,7 @@ We can also negate it, with `hasnt` or `!?` (not `?`). Note this starts to get a
 does not mean neither Adams nor Bernard is present, only that they are not *both* present (and arguing).
 
 
-#### Example: basic knowledge tracking
+#### Пример: basic knowledge tracking
 
 The simplest use of a multi-valued list is for tracking "game flags" tidily.
 
@@ -2379,7 +2378,7 @@ In particular, it allows us to test for multiple game flags in a single line.
 	}
 
 
-#### Example: a doctor's surgery
+#### Пример: a doctor's surgery
 
 We're overdue a fuller example, so here's one.
 
@@ -2489,7 +2488,7 @@ You can also retrieve just a "slice" of the full list, using the `LIST_RANGE` fu
 
 	LIST_RANGE(list_name, min_value, max_value)
 
-### Example: Tower of Hanoi
+### Пример: Tower of Hanoi
 
 To demonstrate a few of these ideas, here's a functional Tower of Hanoi example, written so no one else has to write it.
 
@@ -3098,7 +3097,7 @@ To summarise a difficult section, **ink**'s list construction provides:
 * 	Use `+=` to mark an event as having occurred
 *  	Test using `?` and `!?`
 
-Example:
+Пример:
 
 	LIST GameEvents = foundSword, openedCasket, metGorgon
 	{ GameEvents ? openedCasket }
@@ -3110,7 +3109,7 @@ Example:
 *  Use `=` to set the state; `++` and `--` to step forward or backward
 *  Test using `==`, `>` etc
 
-Example:
+Пример:
 
 	LIST PancakeState = ingredients_gathered, batter_mix, pan_hot, pancakes_tossed, ready_to_eat
 	{ PancakeState == batter_mix }
@@ -3122,7 +3121,7 @@ Example:
 * 	Change state by removing the old state, then adding in the new
 *  Test using `?` and `!?`
 
-Example:
+Пример:
 
 	LIST OnOffState = on, off
 	LIST ChargeState = uncharged, charging, charged
