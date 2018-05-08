@@ -1004,7 +1004,7 @@ A fallback choice is simply a "choice without choice text":
 
 Иногда достаточно самой структуры сплетения. Но когда это не так, нам нужно немного больше контроля.
 
-### Сплетения почти полностью безадресны
+### Сплетения почти всегда не имеют адреса
 
 По умолчанию строки содержимого сплетений не имеют какого-либо адреса или меток, что означает - на них нельзя перейти, а также проверить их посещение. В самой базовой структуры сплетения выбор пользователя меняет путь, которым он продвигается через сплетение и то, что он видит, но как только сплетение пройдено, этот путь забывается.
 
@@ -1012,61 +1012,61 @@ A fallback choice is simply a "choice without choice text":
 
 ### Сборки и варианты выбора могут быть помечены.
 
-Gather points at any nested level can be labelled using brackets.
+Точки сборки на любом уровне вложенности можно пометить, используя скобки.
 
-	-  (top)
+	-  (верх)
 
-Once labelled, gather points can be diverted to, or tested for in conditionals, just like knots and stitches. This means you can use previous decisions to alter later outcomes inside the weave, while still keeping all the advantages of a clear, reliable forward-flow.
+На помеченные сборки можно переходить или проверять их в условиях, точно так же, как узлы и стежки. Это означает, что вы можете использовать предыдущие решения для изменения позднего результата внутри сплетения, всё раыно получая все преимущества чистого и надёжного продвижения вперёд.
 
-Options can also be labelled, just like gather points, using brackets. Label brackets come before conditions in the line.
+Варианты выбора тоже можно пометить, точно так же, как точки сборки, используя скобки. Скобки меток должны идти перед условиями в строке.
 
-These addresses can be used in conditional tests, which can be useful for creating options unlocked by other options.
+Эти "адреса" можно использовать в условных проверках, что может быть удобным для создания вариантов выбора, которые разблокируются другими выборами.
 
-	=== meet_guard ===
-	The guard frowns at you.
+	=== встреча_с_караульным ===
+	Караульный хмурится на тебя.
 
-	* 	(greet) [Greet him]
-		'Greetings.'
-	*	(get_out) 'Get out of my way[.'],' you tell the guard.
+	* 	(здороваться) [Поздороваться с ним]
+		"Приветствую."
+	*	(убирайся) "Убирайся с пути."[], говоришь ты караульному.
 
-	- 	'Hmm,' replies the guard.
+	- 	"Хмм", отвечает стражник.
 
-	*	{greet} 	'Having a nice day?' // only if you greeted him
+	*	{здороваться} "Хороший денёк?"			// только если вы поздоровались
 
-	* 	'Hmm?'[] you reply.
+	* 	"Хмм?"[], отвечаешь ты.
 
-	*	{get_out} [Shove him aside] 	 // only if you threatened him
-		You shove him sharply. He stares in reply, and draws his sword!
-		-> fight_guard 			// this route diverts out of the weave
+	*	{убирайся} [Оттолкнуть его в сторону]	// только если вы угрожали ему
+		Ты резко толкаешь его. Он в ответ пристально смотрит на тебя и вытаскивает меч!
+		-> драка_с_караульным 					// этот путь уводит из сплетения
 
-	-	'Mff,' the guard replies, and then offers you a paper bag. 'Toffee?'
-
-
-### Scope
-
-Inside the same block of weave, you can simply use the label name; from outside the block you need a path, either to a different stitch within the same knot:
-
-	=== knot ===
-	= stitch_one
-		- (gatherpoint) Some content.
-	= stitch_two
-		*	{stitch_one.gatherpoint} Option
-
-or pointing into another knot:
-
-	=== knot_one ===
-	-	(gather_one)
-		* {knot_two.stitch_two.gather_two} Option
-
-	=== knot_two ===
-	= stitch_two
-		- (gather_two)
-			*	{knot_one.gather_one} Option
+	-	"Мфф", говорит стражник, а затем протягивает тебе бумажный кулёк. "Ириску?"
 
 
-#### Дополнительно: all options can be labelled
+### Область видимости
 
-In truth, all content in ink is a weave, even if there are no gathers in sight. That means you can label *any* option in the game with a bracket label, and then reference it using the addressing syntax. In particular, this means you can test *which* option a player took to reach a particular outcome.
+Внутри одного блока сплетения вы можете просто использовать имя метки. Снаружи блока вам нужен путь, на другой стежок внутри того же узла:
+
+	=== узел ===
+	= стежок_один
+		- (точка_сборки) Некий текст.
+	= стежок_два
+		*	{стежок_один.точка_сборки} Вариант выбора
+
+или вообще в другом узле:
+
+	=== узел_один ===
+	-	(сборка_один)
+		* {узел_два.стежок_два.сборка_два} Вариант выбора
+
+	=== узел_два ===
+	= стежок_два
+		- (сборка_два)
+			*	{узел_один.сборка_один} Вариант выбора
+
+
+#### Дополнительно: все выборы можно пометить
+
+По правде, всё содержимое ink-скрипта является сплетением, даже если нет видимых сборок. Это означает, что вы можете пометить *любой* вариант выбора в игре меткой в скобках, а затем сослаться на него, используя синтаксис адресации. В частности, это значит, что вы можете проверить *какой* выбор игрок сделал, чтобы достичь конкретного результата. 
 
 	=== fight_guard ===
 	...
