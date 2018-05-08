@@ -934,7 +934,7 @@ A fallback choice is simply a "choice without choice text":
 
 	- Я взглянул на месье Фогга
 	*	... и не смог больше сдерживаться.
-		"Какова цель нашего путешествия, Месье?"
+		"Какова цель нашего путешествия, месье?"
 		"Пари", ответил он.
 		* * 	"Пари!"[] - повторил я.
 				Он кивнул.
@@ -952,65 +952,65 @@ A fallback choice is simply a "choice without choice text":
 	- мы провели остаток дня в молчании.
 	- -> END
 
-with a couple of possible playthroughs. A short one:
+И несколько его прохождений. Вот короткое:
 
-	I looked at Monsieur Fogg
+	Я взглянул на месье Фогга
 
-	1: ... and I could contain myself no longer.
-	2: ... but I said nothing
+	1: ... и не смог больше сдерживаться.
+	2: ... но ничего не сказал
 
 	> 2
-	... but I said nothing and we passed the day in silence.
+	... но ничего не сказал и мы провели остаток дня в молчании.
 
-and a longer one:
+А вот более длинное:
 
-	I looked at Monsieur Fogg
+	Я взглянул на месье Фогга
 
-	1: ... and I could contain myself no longer.
-	2: ... but I said nothing
+	1: ... и не смог больше сдерживаться.
+	2: ... но ничего не сказал
 
 	> 1
-	... and I could contain myself no longer.
-	'What is the purpose of our journey, Monsieur?'
-	'A wager,' he replied.
+	... и не смог больше сдерживаться.
+	"Какова цель нашего путешествия, месье?"
+	"Пари", ответил он.
 
-	1: 'A wager!'
-	2: 'Ah.'
+	1: "Пари!"
+	2: "А."
 
 	> 1
-	'A wager!' I returned.
-	He nodded.
+	"Пари!" - повторил я.
+	Он кивнул.
 
-	1: 'But surely that is foolishness!'
-	2: 'A most serious matter then!'
-
-	> 2
-	'A most serious matter then!'
-	He nodded again.
-
-	1: 'But can we win?'
-	2: 'A modest wager, I trust?'
-	3: I asked nothing further of him then.
+	1: "Но это же сущая глупость!"
+	2: "Это серьёзное дело!"
 
 	> 2
-	'A modest wager, I trust?'
-	'Twenty thousand pounds,' he replied, quite flatly.
-	After that, we passed the day in silence.
+	"Это серьёзное дело!"
+	Он кивнул снова.
 
-Hopefully, this demonstrates the philosophy laid out above: that weaves offer a compact way to offer a lot of branching, a lot of choices, but with the guarantee of getting from beginning to end!
+	1: "Но можем ли мы победить?"
+	2: "Скромное пари, я думаю?"
+	3: Я решил больше не спрашивать ничего.
+
+	> 2
+	"Скромное пари, я думаю?"
+	"Двадцать тысяч фунтов", ответил он довольно ровно.
+	После этого, мы провели остаток дня в молчании.
+
+Мы надеемся, что это иллюстрируют изложенную выше философию, что сплетения предлагают компактный способ реализовать множественное ветвление с большим количеством выборов, но с гарантией того, что начав с начала, вы точно доберётесь в повествовании до конца!
 
 
-## 3) Tracking a Weave
+## 3) Отслеживание сплетений
 
-Sometimes, the weave structure is sufficient. But when it's not, we need a bit more control.
+Иногда достаточно самой структуры сплетения. Но когда это не так, нам нужно немного больше контроля.
 
-### Weaves are largely unaddressed
+### Сплетения почти полностью безадресны
 
-By default, lines of content in a weave don't have an address or label, which means they can't be diverted to, and they can't be tested for. In the most basic weave structure, choices vary the path the player takes through the weave and what they see, but once the weave is finished those choices and that path are forgotten.
+По умолчанию строки содержимого сплетений не имеют какого-либо адреса или меток, что означает - на них нельзя перейти, а также проверить их посещение. В самой базовой структуры сплетения выбор пользователя меняет путь, которым он продвигается через сплетение и то, что он видит, но как только сплетение пройдено, этот путь забывается.
 
-But should we want to remember what the player has seen, we can - we add in labels where they're needed using the `(label_name)` syntax.
+Но если нам требуется запомнить что игрок видел, мы можем это сделать - мы можем добавить метку там, где нам нужно, используя синтаксис `(имя_метки)`.
 
-### Gathers and options can be labelled
+### Сборки и варианты выбора могут быть помечены.
 
 Gather points at any nested level can be labelled using brackets.
 
