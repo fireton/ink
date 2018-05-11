@@ -1068,65 +1068,62 @@ A fallback choice is simply a "choice without choice text":
 
 По правде, всё содержимое ink-скрипта является сплетением, даже если нет видимых сборок. Это означает, что вы можете пометить *любой* вариант выбора в игре меткой в скобках, а затем сослаться на него, используя синтаксис адресации. В частности, это значит, что вы можете проверить *какой* выбор игрок сделал, чтобы достичь конкретного результата. 
 
-	=== fight_guard ===
+	=== драка_с_караульным ===
 	...
-	= throw_something
-	*	(rock) [Throw rock at guard] -> throw
-	* 	(sand) [Throw sand at guard] -> throw
+	= кинуть_чтото
+	*	(камень) [Кинуть в стражника камнем] -> кинуть
+	* 	(песок) [Кинуть в стражника песком] -> кинуть
 
-	= throw
-	You hurl {throw_something.rock:a rock|a handful of sand} at the guard.
-
-
-#### Дополнительно: Loops in a weave
-
-Labelling allows us to create loops inside weaves. Here's a standard pattern for asking questions of an NPC.
-
-	- (opts)
-		*	'Can I get a uniform from somewhere?'[] you ask the cheerful guard.
-			'Sure. In the locker.' He grins. 'Don't think it'll fit you, though.'
-		*	'Tell me about the security system.'
-			'It's ancient,' the guard assures you. 'Old as coal.'
-		*	'Are there dogs?'
-			'Hundreds,' the guard answers, with a toothy grin. 'Hungry devils, too.'
-		// We require the player to ask at least one question
-		*	{loop} [Enough talking]
-			-> done
-	- (loop)
-		// loop a few times before the guard gets bored
-		{ -> opts | -> opts | }
-		He scratches his head.
-		'Well, can't stand around talking all day,' he declares.
-	- (done)
-		You thank the guard, and move away.
+	= кинуть
+	Ты швыряешь в стражника {кинуть_чтото.камень:камень|пригоршню песка}.
 
 
+#### Дополнительно: Циклы в сплетении
 
+Возможность ставить метки позволяет нам создавать циклы внутри сплетений. Вот стандартный подход для того, чтобы задать несколько вопросов NPC.
+
+	- (варианты)
+		*	"Где можно раздобыть униформу?"[], спрашиваешь ты у радостного стражника.
+			"Вот здесь, в шкафчике." Он усмехается. "Но не думай, что она на тебя налезет."
+		*	"Расскажи мне про систему безопасности."
+			"Она древняя", заверяет тебя стражник, "как окаменелость."
+		*	"Тут есть собаки?"
+			"Сотни", отвечает стражник с зубастой ухмылкой. "Голодные дьяволы, да."
+		// Мы требуем от игрока задать хотя бы один вопрос
+		*	{цикл} [Хватит разговоров]
+			-> всё
+	- (цикл)
+		// повторим пару раз до тех пор, пока стражнику не наскучит
+		{ -> варианты | -> варианты | }
+		Он чешет затылок.
+		"Мы не можем стоять здесь и разговаривать весь день", объявляет он.
+	- (всё)
+		Ты благодаришь стражника и уходишь.
 
 
 #### Дополнительно: diverting to options
 
 Options can also be diverted to: but the divert goes to the output of having chosen that choice, *as though the choice had been chosen*. So the content printed will ignore square bracketed text, and if the option is once-only, it will be marked as used up.
 
-	- (opts)
-	*	[Pull a face]
-		You pull a face, and the soldier comes at you! -> shove
+	- (варианты)
+	*	[Состроить гримасу]
+		Ты состроил гримассу и стражник идёт на тебя! -> пихать
 
-	*	(shove) [Shove the guard aside] You shove the guard to one side, but he comes back swinging.
+	*	(пихать) [Отпихнуть стражника в сторону] Ты отпихнул стражника, но он качнулся обратно.
 
-	*	{shove} [Grapple and fight] -> fight_the_guard
+	*	{пихать} [Приготовиться к бою] -> биться_со_стражником
 
-	- 	-> opts
+	- 	-> варианты
 
 produces:
 
-	1: Pull a face
+	1: Состроить гримасу
 	2: Shove the guard aside
 
 	> 1
-	You pull a face, and the soldier comes at you! You shove the guard to one side, but he comes back swinging.
+	Ты состроил гримассу и стражник идёт на тебя! Ты отпихнул стражника, но он качнулся обратно.
 
-	1: Grapple and fight
+	1: Приготовиться к бою
 
 	>
 
