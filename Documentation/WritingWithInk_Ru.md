@@ -1101,13 +1101,13 @@ A fallback choice is simply a "choice without choice text":
 		Ты благодаришь стражника и уходишь.
 
 
-#### Дополнительно: diverting to options
+#### Дополнительно: переход на выбор
 
-Options can also be diverted to: but the divert goes to the output of having chosen that choice, *as though the choice had been chosen*. So the content printed will ignore square bracketed text, and if the option is once-only, it will be marked as used up.
+На выборы тоже можно переходить. Options can also be diverted to: but the divert goes to the output of having chosen that choice, *as though the choice had been chosen*. So the content printed will ignore square bracketed text, and if the option is once-only, it will be marked as used up.
 
 	- (варианты)
 	*	[Состроить гримасу]
-		Ты состроил гримассу и стражник идёт на тебя! -> пихать
+		Ты состроил гримасу и стражник идёт на тебя! -> пихать
 
 	*	(пихать) [Отпихнуть стражника в сторону] Ты отпихнул стражника, но он качнулся обратно.
 
