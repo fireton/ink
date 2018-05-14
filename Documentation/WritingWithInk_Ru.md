@@ -1103,7 +1103,7 @@ A fallback choice is simply a "choice without choice text":
 
 #### Дополнительно: переход на выбор
 
-На выборы тоже можно переходить. Options can also be diverted to: but the divert goes to the output of having chosen that choice, *as though the choice had been chosen*. So the content printed will ignore square bracketed text, and if the option is once-only, it will be marked as used up.
+На выборы тоже можно переходить. Но такой переход ведёт к результату выбора этого варианта, *как если бы этот вариант был выбран игроком*. Так что печатаемый ответ будет игнорировать текст в квадратных скобках и, если вариант был "одноразовый", он будет помечен как посещённый.
 
 	- (варианты)
 	*	[Состроить гримасу]
@@ -1115,7 +1115,7 @@ A fallback choice is simply a "choice without choice text":
 
 	- 	-> варианты
 
-produces:
+выведет:
 
 	1: Состроить гримасу
 	2: Shove the guard aside
@@ -1127,25 +1127,21 @@ produces:
 
 	>
 
-#### Дополнительно: Gathers directly after an option
+#### Дополнительно: сборка непосредственно после варианта выбора
 
-The following is valid, and frequently useful.
+Следующее вполне правомерно и часто удобно.
 
-	*	"Are you quite well, Monsieur?"[] I asked.
-		- - (quitewell) "Quite well," he replied.
-	*	"How did you do at the crossword, Monsieur?"[] I asked.
-		-> quitewell
-	*	I said nothing[] and neither did my Master.
-	-	We feel into companionable silence once more.
+	*	"Вы в порядке, месье?"[], спросил я.
+		- - (впорядке) "Да, всё хорошо", ответил он.
+	*	"У вас получилось с кроссвордом, месье?"[], спросил я.
+		-> впорядке
+	*	Я ничего не сказал[], и мой господин также промолчал.
+	-	Мы снова ощутили дружественную тишину между нами.
 
-Note the level 2 gather point directly below the first option: there's nothing to gather here, really, but it gives us a handy place to divert the second option to.
-
-
+Обратите внимание на точку сборки второго уровня сразу после первого выбора: там, в общем-то, нечего собирать, но она даёт нам удобное место для перехода после второго варианта выбора.
 
 
-
-
-# Part 3: Variables and Logic
+# Часть 3: Переменные и логика
 
 So far we've made conditional text, and conditional choices, using tests based on what content the player has seen so far.
 
