@@ -1143,25 +1143,24 @@ A fallback choice is simply a "choice without choice text":
 
 # Часть 3: Переменные и логика
 
-So far we've made conditional text, and conditional choices, using tests based on what content the player has seen so far.
+До сих пор мы делали текст, выводящийся по условию, и условные выборы, используя проверки, основанные на том, какие части содержимого игры игроки видел на текущий момент.
 
-**ink** also supports variables, both temporary and global, storing numerical and content data, or even story flow commands. It is fully-featured in terms of logic, and contains a few additional structures to help keep the often complex logic of a branching story better organised.
+**ink** также поддерживает переменные, как временные, так и глобальные, позволяющие хранить числовые и строковые данные или даже команды управления историей. Они полнофункциональны в смысле логики, и содержат дополнительные структуры, помогающие лучше организовать часто весьма сложную логику ветвящихся историй.
 
+## 1) Глобальные переменные
 
-## 1) Global Variables
+Самые значимые переменные, и, вероятно, самые полезные для создаваемой истории, это переменные, хранящие некие уникальные значения состояния игры - всё что угодно, начиная с количества денег в кармане протагониста, и заканчивая значением, описывающим его состояние души.
 
-The most powerful kind of variable, and arguably the most useful for a story, is a variable to store some unique property about the state of the game - anything from the amount of money in the protagonist's pocket, to a value representing the protagonist's state of mind.
+Этот тип переменных называется "глобальным" потому, что к ним можно обратиться из любого места истории - как прочитать, так и записать в них новое значение. (Традиционно, в программировании принято избегать такого рода вещей, поскольку это позволяет одной части программы испортить работоспособность другой, не относящейся к ней, части. Но история - это история. И в историях всё строится на последствиях: что случилось в Вегасе редко остаётся там же.)
 
-This kind of variable is called "global" because it can be accessed from anywhere in the story - both set, and read from. (Traditionally, programming tries to avoid this kind of thing, as it allows one part of a program to mess with another, unrelated part. But a story is a story, and stories are all about consequences: what happens in Vegas rarely stays there.)
+### Определяем глобальные переменные
 
-### Defining Global Variables
+Глобальные переменные можно объявить где угодно с помощью оператора `VAR`. Им необходимо присвоить стартовое значение, которое и определит тип этой переменной - целочисленный, с плавающей точкой, текстовое содержимое, или адрес внутри истории.
 
-Global variables can be defined anywhere, via a `VAR` statement. They should be given an initial value, which defines what type of variable they are - integer, floating point (decimal), content, or a story address.
-
-	VAR knowledge_of_the_cure = false
-	VAR players_name = "Emilia"
-	VAR number_of_infected_people = 521
-	VAR current_epilogue = -> they_all_die_of_the_plague
+	VAR знание_о_лекарстве = false
+	VAR имя_игрока = "Эмилия"
+	VAR количество_зараженных_людей = 521
+	VAR текущий_эпилог = -> все_умерли_от_чумы
 
 ### Using Global Variables
 
