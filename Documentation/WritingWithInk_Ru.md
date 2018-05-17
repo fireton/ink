@@ -1153,7 +1153,7 @@ A fallback choice is simply a "choice without choice text":
 
 Этот тип переменных называется "глобальным" потому, что к ним можно обратиться из любого места истории - как прочитать, так и записать в них новое значение. (Традиционно, в программировании принято избегать такого рода вещей, поскольку это позволяет одной части программы испортить работоспособность другой, не относящейся к ней, части. Но история - это история. И в историях всё строится на последствиях: что случилось в Вегасе редко остаётся там же.)
 
-### Определяем глобальные переменные
+### Объявление глобальных переменных
 
 Глобальные переменные можно объявить где угодно с помощью оператора `VAR`. Им необходимо присвоить стартовое значение, которое и определит тип этой переменной - целочисленный, с плавающей точкой, текстовое содержимое, или адрес внутри истории.
 
@@ -1162,119 +1162,118 @@ A fallback choice is simply a "choice without choice text":
 	VAR количество_зараженных_людей = 521
 	VAR текущий_эпилог = -> все_умерли_от_чумы
 
-### Using Global Variables
+### Использование глобальных переменных
 
-We can test global variables to control options, and provide conditional text, in a similar way to what we have previously seen.
+Мы можем проверять глобальные переменные чтобы управлять вариантами выбора и выводить условный текст, таким же образом, как мы видели раньше.
 
-	=== the_train ===
-		The train jolted and rattled. { mood > 0:I was feeling positive enough, however, and did not mind the odd bump|It was more than I could bear}.
-		*	{ not knows_about_wager } 'But, Monsieur, why are we travelling?'[] I asked.
-		* 	{ knows_about_wager} I contemplated our strange adventure[]. Would it be possible?
+	=== поезд ===
+		Поезд трясся и грохотал. { настроение > 0:Впрочем, я чувствовал себя достаточно позитивно, чтобы не обращать внимания на болтанку|Это было невыносимо}.
+		*	{ not знает_о_пари } "Но месье, почему мы путешествуем?"[], спросил я.
+		* 	{ знает_о_пари} Я рзамышлял о нашем странном приключении[]. Будет ли оно успешным?
 
-#### Дополнительно: storing diverts as variables
+#### Дополнительно: хранение переходов в переменных
 
-A "divert" statement is actually a type of value in itself, and can be stored, altered, and diverted to.
+Команда перехода, на самом деле, сама является значением, которое можно хранить, менять и использовать для реального перехода по истории.
 
-	VAR 	current_epilogue = -> everybody_dies
+	VAR текущий_эпилог = -> все_умерли
 
-	=== continue_or_quit ===
-	Give up now, or keep trying to save your Kingdom?
-	*  [Keep trying!] 	-> more_hopeless_introspection
-	*  [Give up] 		-> current_epilogue
-
-
-#### Дополнительно: Global variables are externally visible
-
-Global variables can be accessed, and altered, from the runtime as well from the story, so provide a good way to communicate between the wider game and the story.
-
-The **ink** layer is often be a good place to store gameplay-variables; there's no save/load issues to consider, and the story itself can react to the current values.
+	=== продолжать_или_выйти ===
+	Сдадитесь или будете продолжать попытки спасти своё Королевство?
+	*  [Продолжать!] 	-> ещё_больше_безнадёжной_рефлексии
+	*  [Сдаться] 		-> текущий_эпилог
 
 
+#### Дополнительно: Глобальные переменные видимы "снаружи"
 
-### Printing variables
+К глобальным переменным можно получить доступ, а также менять их, из управляющей программы, точно также как и изнутри истории. Так что они предоставляют хороший способ взаимодействия межде ink-историей и игрой в целом, частью которой эта история является.
 
-The value of a variable can be printed as content using an inline syntax similar to sequences, and conditional text:
+Слой **ink** часто является хорошим местом для хранения переменных, влияющих на геймплей. Нет никаких проблем с сохранением/загрузкой и сама история сможет взаимодействовать с этими значениями.
 
-	VAR friendly_name_of_player = "Jackie"
-	VAR age = 23
 
-	My name is Jean Passepartout, but my friend's call me {friendly_name_of_player}. I'm {age} years old.
+### Вывод значения переменной
 
-This can be useful in debugging. For more complex printing based on logic and variables, see the section on functions.
+Значение переменной можно вывести в содержимое игры, используя синтаксис, похожий на последовательности или условный текст:
 
-### Evaluating strings
+	VAR дружественное_имя_игрока = "Джеки"
+	VAR возраст = 23
 
-It might be noticed that above we refered to variables as being able to contain "content", rather than "strings". That was deliberate, because a string defined in ink can contain ink - although it will always evaluate to a string. (Yikes!)
+	Моё имя Жан Паспарту, но мои друзья зовут меня {дружественное_имя_игрока}. Мне {возраст}.
 
-	VAR a_colour = ""
+Это может пригодиться при отладке. Более сложные способы вывода, основанные на логике и переменных, можно посмотреть в разделе про функции.
 
-	~ a_colour = "{~red|blue|green|yellow}" 
+### Вычисление строк
+
+Вы, должно быть, заметили, что выше было написано, что переменные могут содержать "текстовое содержимое", а не "строки". Это было сделано намерено, потому что строка, определённая в **ink**, может содержать ink-разметку - хотя, в конце концов, всё равно будет вычислена как строка. (Чёрт!)
+
+	VAR цвет = ""
+
+	~ цвет = "{~красный|синий|зелёный|жёлтый}" 
 	
-	{a_colour} 
+	{цвет} 
 	
-... produces one of red, blue, green or yellow. 
+... выведет один из цветов - красный, синий, зелёный или жёлтый.
 
-Note that once a piece of content like this is evaluated, its value is "sticky". (The quantum state collapses.) So the following:
+Обратите внимание, что как только содержимое такого рода "вычислено", его значение становится "липким". (Квантовое состояние схлопывается.) Так что вот такое:
 
-	The goon hits you, and sparks fly before you eyes, {a_colour} and {a_colour}.
+	Головорез ударил тебя, так что искры посыпались из глаз - {цвет} и {цвет}.
 	
-... won't produce a very interesting effect. (If you really want this to work, use a text function to print the colour!)
+... не приведёт к не очень интересному результату. (Если вы действительно хотите, чтобы это сработало, используйте текстовые функции, чтобы вывести название цвета!)
 
-This is also why 
+И это также причина того, что  
 
-	VAR a_colour = "{~red|blue|green|yellow}"
+	VAR цвет = "{~красный|синий|зелёный|жёлтый}"
 
-is explicitly disallowed; it would be evaluated on the construction of the story, which probably isn't what you want.
-
-
-## 2) Logic
-
-Obviously, our global variables are not intended to be constants, so we need a syntax for altering them.
-
-Since by default, any text in an **ink** script is printed out directly to the screen, we use a markup symbol to indicate that a line of content is intended meant to be doing some numerical work, we use the `~` mark.
-
-The following statements all assign values to variables:
+явно запрещено. Значение будет вычислено при компиляции истории, а это не то, что вы, возможно, хотите.
 
 
-	=== set_some_variables ===
-		~ knows_about_wager = true
+## 2) Логика
+
+Очевидно, наши глобальные переменные не предназначены оставаться константами, так что нам нужен какой-нибудь синтаксис, чтобы их менять.
+
+Поскольку, по-умолчанию, любой текст в **ink**-скрипте напрямую выводится на экран, нужен специальный символ для того, чтобы обозначить строку, содержимое которой предназначено для того, чтобы проделать какую-то работу с числами, для этого мы используем значок `~`.
+
+Следующие команды назначают значения переменным:
+
+
+	=== установить_всякие_переменные ===
+		~ знает_про_пари = true
 		~ x = (x * x) - (y * y) + c
 		~ y = 2 * x * y
 
-and the following will test conditions:
+а следующим образом можно проверить условия:
 
 	{ x == 1.2 }
 	{ x / 2 > 4 }
 	{ y - 1 <= x * x }
 	
-### Mathematics
+### Математика
 
-**ink** supports the four basic mathematical operations (`+`, `-`, `*` and `/`), as well as `%` (or `mod`), which returns the remainder after integer division.
+**ink** поддерживает четыре базовых математических операции (`+`, `-`, `*` и `/`), а также `%` (или `mod`), который возвращает остаток от деления нацело.
 
-If more complex operations are required, one can write functions (using recursion if necessary), or call out to external, game-code functions (for anything more advanced). 
+Если требуются более сложные операции, можно написать функцию (используя, при необходимости, рекурсии) или вызвать внешнюю функцию из кода игры (для чего-то более продвинутого).
 
-#### Дополнительно: numerical types are implicit
+#### Дополнительно: числовые типы определяются неявно
 
-Results of operations - in particular, for division - are typed based on the type of the input. So integer division returns integer, but floating point division returns floating point results.
+Результаты действий - в частности, деления - типизируются на основе типа входящих аргументов. Так деление целых чисел вернёт целое число, но деление чисел с плавающей точкой вернёт результат с плавающей точкой.
 
 	~ x = 2 / 3
 	~ y = 7 / 3
 	~ z = 1.2 / 0.5
 
-assigns `x` to be 0, `y` to be 2 and `z` to be 2.4.
+получим, что `x` равно 0, `y` равно 2 и `z` равно 2.4.
 
-### String queries
+### Сравнение строк
 
-Oddly for a text-engine, **ink** doesn't have much in the way of string-handling: it's assumed that any string conversion you need to do will be handled by the game code (and perhaps by external functions.) But we support three basic queries - equality, inequality, and substring (which we call ? for reasons that will become clear in a later chapter). 
+Несколько странно для текстового движка, но в **ink** мало что есть для работы со строками. Предполагается, что любое преобразование строк, которое может понадобится, управляется кодом игры (возможно, через внешние функции). Но мы поддерживаем три базовых типа сравнения - равенство, неравенство и поиск подстроки (которое мы называем `?` по причинам, которые станут яснее в следующих разделах).
 
-The following all return true:
+Следующие проверки все возвращают положительные результат:
 	
-	{ "Yes, please." == "Yes, please." }
-	{ "No, thank you." != "Yes, please." }
-	{ "Yes, please" ? "ease" }
+	{ "Да, пожалуйста." == "Да, пожалуйста." }
+	{ "Нет, спасибо." != "Да, пожалуйста." }
+	{ "Да, пожалуйста." ? "пожалуй" }
 	
 
-## 3) Conditional blocks (if/else)
+## 3) Условные блоки (if/else)
 
 We've seen conditionals used to control options and story content; **ink** also provides an equivalent of the normal if/else-if/else structure.
 
