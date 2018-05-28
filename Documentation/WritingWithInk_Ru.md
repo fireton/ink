@@ -1275,17 +1275,17 @@ A fallback choice is simply a "choice without choice text":
 
 ## 3) Условные блоки (if/else)
 
-We've seen conditionals used to control options and story content; **ink** also provides an equivalent of the normal if/else-if/else structure.
+Мы уже видели условия, позволяющие управлять вариантами выбора и содержимым истории. В **ink** также есть эквиваленты нормальной структуры if/else-if/else (если/иначе-если/иначе).
 
-### A simple 'if'
+### Простой 'if' (если)
 
-The if syntax takes its cue from the other conditionals used so far, with the `{`...`}` syntax indicating that something is being tested.
+Синтаксис условного оператора `if` берёт своё начало из условий, которые мы использовали до сих пор, и основан на синтаксисе со скобками `{`...`}`, обозначающими, что нечто требует проверки.
 
 	{ x > 0:
 		~ y = x - 1
 	}
 
-Else conditions can be provided:
+Обратные (иначе) условия тоже можно указать:
 
 	{ x > 0:
 		~ y = x - 1
@@ -1293,9 +1293,9 @@ Else conditions can be provided:
 		~ y = x + 1
 	}
 
-### Extended if/else if/else blocks
+### Расширенные блоки if/else
 
-The above syntax is actually a specific case of a more general structure, something like a "switch" statement of another language:
+Синтаксис выше, на самом деле, частный случай более общей структуры, что-то вроде оператора "switch" в других языках программирования:
 
 	{
 		- x > 0:
@@ -1304,7 +1304,7 @@ The above syntax is actually a specific case of a more general structure, someth
 			~ y = x + 1
 	}
 
-And using this form we can include 'else-if' conditions:
+И, используя эту форму, мы можем добавить 'else-if' условия:
 
 	{
 		- x == 0:
@@ -1315,29 +1315,28 @@ And using this form we can include 'else-if' conditions:
 			~ y = x + 1
 	}
 
-(Note, as with everything else, the white-space is purely for readability and has no syntactic meaning.)
+(Обратите внимание, здесь, как и везде, пробелы используются исключительно для удобства чтения и не несут никакой синтаксической нагрузки.)
 
-#### Пример: context-relevant content
+#### Пример: содержимое, релевантное контексту
 
-Note these tests don't have to be variable-based and can use read-counts, just as other conditionals can, and the following construction is quite frequent, as a way of saying "do some content which is relevant to the current game state":
+Отметим, что эти проверки не обязательно должны основываться на переменных. Они могут использовать счётчики посещений, точно так же, как и любые другие условия. Конструкции, подобные указанным ниже, довольно часто используются для логики вида "сделай нечто, что отвечает текущему состоянию игры":
 
-	=== dream ===
+	=== сон ===
 		{
-			- visited_snakes && not dream_about_snakes:
-				~ fear++
-				-> dream_about_snakes
+			- посетил_змей && not сон_про_змей:
+				~ страх++
+				-> сон_про_змей
 
-			- visited_poland && not dream_about_polish_beer:
-				~ fear--
-				-> dream_about_polish_beer
+			- посетил_польшу && not сон_про_польское_пиво:
+				~ страх--
+				-> сон_про_польское_пиво
 
 			- else:
-				// breakfast-based dreams have no effect
-				-> dream_about_marmalade
+				// сны про завтрак не оказывают эффекта
+				-> сон_про_мармелад
 		}
 
-The syntax has the advantage of being easy to extend, and prioritise.
-
+Преимущество этого синтаксиса заключается в простоте расширения и приоритизации.
 
 
 ### Conditional blocks are not limited to logic
