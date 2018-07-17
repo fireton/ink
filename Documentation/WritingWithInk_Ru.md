@@ -1339,64 +1339,64 @@ A fallback choice is simply a "choice without choice text":
 Преимущество этого синтаксиса заключается в простоте расширения и приоритизации.
 
 
-### Conditional blocks are not limited to logic
+### Условные блоки не ограничены только лишь логикой
 
-Conditional blocks can be used to control story content as well as logic:
+Условные блоки можно использовать, чтобы управлять не только логикой игры, но и её содержимым:
 
-	I stared at Monsieur Fogg.
-	{ know_about_wager:
-		<> "But surely you are not serious?" I demanded.
+	Я уставился на месье Фогга.
+	{ знает_про_пари:
+		<> "Но вы же не серьёзно?", спросил я.
 	- else:
-		<> "But there must be a reason for this trip," I observed.
+		<> "Но должна же быть причина для такого путешествия", заметил я.
 	}
-	He said nothing in reply, merely considering his newspaper with as much thoroughness as entomologist considering his latest pinned addition.
+	Он ничего не ответил, изучая свою газету с тем же тщанием, с каким энтомолог изучает новое пополнение своей коллекции.
 
-You can even put options inside conditional blocks:
+Вы даже можете поместить варианты выбора внутрь условного блока:
 
-	{ door_open:
-		* 	I strode out of the compartment[] and I fancied I heard my master quietly tutting to himself. 			-> go_outside
+	{ дверь_открыта:
+		* 	Я направился к выходу из купе[] и мне показалось, что я слышу как мой господин тихонько цокает языком. -> идти_наружу
 	- else:
-		*	I asked permission to leave[] and Monsieur Fogg looked surprised. 	-> open_door
-		* 	I stood and went to open the door[]. Monsieur Fogg seemed untroubled by this small rebellion. -> open_door
+		*	Я попросил разрешения удалиться[], и месье Фогг выглядел удивлённым. 	-> открыть_дверь
+		* 	Я встал и открыл дверь[]. Месье Фогг своим видом показал, что его не беспокоит этот маленький бунт. -> открыть дверь
 	}
 
-...but note that the lack of weave-syntax and nesting in the above example isn't accidental: to avoid confusing the various kinds of nesting at work, you aren't allowed to include gather points inside conditional blocks.
+...но обратите внимание, что ограниченный синтаксис сплетения и вложений выше не случаен: во избежание путаницы в различных областях вложений вам не разрешается использовать точки сборки внутри условных блоков.
 
-### Multiline list blocks
+### Многострочные списки
 
-There's one other class of multiline block, which expands on the list functionality previous mentioned. The following are all valid and do what you might expect:
+Существует ещё один класс многострочных блоков, который расширяет функционал списков, о которых говорилось раньше. Всё последующее вполне правомерно и делает именно то, что вы можете предположить:
 
- 	// Sequence: go through the alternatives, and stick on last
+ 	// Последовательность: идём через альтернативы и останавливаемся на последней
 	{ stopping:
-		-	I entered the casino.
-		-  I entered the casino again.
-		-  Once more, I went inside.
+		-	Я вошёл в казино.
+		-	Я зашёл в казино ещё раз.
+		-	Я опять зашёл внутрь.
 	}
 
-	// Shuffle: show one at random
-	At the table, I drew a card. <>
+	// Перетасовка: показать случайный вариант
+	Сидя за столом, я вытащил карту. <>
 	{ shuffle:
-		- 	Ace of Hearts.
-		- 	King of Spades.
-		- 	2 of Diamonds.
-			'You lose!' crowed the croupier.
-			-> leave_casino
+		- 	Туз червей.
+		- 	Король пик.
+		- 	Двойка бубен.
+			'Вы проиграли!' - зло усмехнулься крупье.
+			-> покинуть_казино
 	}
 
-	// Cycle: show each in turn, and then cycle
+	// Циклический: показать каждый по очереди и далее по кругу
 	{ cycle:
-		- I held my breath.
-		- I waited impatiently.
-		- I paused.
+		- Я затаил дыхание.
+		- Я нетерпеливо ждал.
+		- Я замер.
 	}
 
-	// Once: show each, once, in turn, until all have been shown
+	// Единожды: показать каждый, один раз, по очереди до тех пор, пока все не будут показаны
 	{ once:
-		- Would my luck hold?
-		- Could I win the hand?
+		- Продержится ли моя удача?
+		- Смогу ли я выиграть расклад?
 	}
 
-## 4) Temporary Variables
+## 4) Временные переменные
 
 ### Temporary variables are for scratch calculations
 
