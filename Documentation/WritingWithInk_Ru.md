@@ -571,13 +571,13 @@ A fallback choice is simply a "choice without choice text":
 
 До сих пор всё содержимое игры, что мы видели, было статичным, фиксированные куски текста. Но содержимое также может меняться, прямо в момент вывода.
 
-### Последовательности, циклы и другие списки
+### Последовательности, циклы и другие альтернативы
 
-Простейший способ варьировать текст - с помощью списков, из которых он выбирается в соответствии с некоторыми правилами. **ink** поддерживает несколько видов. Списки записываются внутри фигурных скобок `{` и `}`, а элементы отделены друг от друга вертикальной чертой `|`.
+Простейший способ варьировать текст - с помощью списков альтернатив, из которых он выбирается в соответствии с некоторыми правилами. **ink** поддерживает несколько видов. Списки записываются внутри фигурных скобок `{` и `}`, а элементы отделены друг от друга вертикальной чертой `|`.
 
 Естественно, что они полезны лишь в таких местах, которые посещаются больше одного раза!
 
-#### Типы списков
+#### Типы альтернатив
 
 **Последовательности** (по умолчанию):
 
@@ -606,17 +606,17 @@ A fallback choice is simply a "choice without choice text":
 
 	Я подбросил монетку. {~Орёл|Решка}.
 
-#### Возможности списков
+#### Возможности альтернатив
 
-Списки могут содержать пустые элементы.
+Списки альтернатив могут содержать пустые элементы.
 
 	Я шагнул вперёд. {!||||Неожиданно погас свет. -> ой}
 
-Списки могут быть вложенными.
+Списки альтернатив могут быть вложенными.
 
 	Крысомедведь{&{, не тратя время попусту, | }ударил|царапнул} {&тебя|тебе прямо по {&ноге|руке|щеке}}.
 
-Списки могут включать переходы.
+Списки альтернатив могут включать переходы.
 
 	Я {подождал.|ещё подождал.|вздремнул.|проснулся и подождал ещё.|сдался и ушёл. -> уйти_из_почты}
 
@@ -628,7 +628,7 @@ A fallback choice is simply a "choice without choice text":
 
 #### Примеры
 
-Списки можно использовать внутри циклов чтобы без больших усилий создавать видимость умного, управляющего своим состоянием геймплея.
+Списки альтернатив можно использовать внутри циклов чтобы без больших усилий создавать видимость умного, управляющего своим состоянием геймплея.
 
 Вот одноузловая версия игры "Прибей крота". Обратите внимание, мы используем одноразовые варианты выбора и запасной вариант, чтобы гарантировать, что крот не будет бегать по кругу, а игра обязательно завершится.
 
@@ -695,7 +695,7 @@ A fallback choice is simply a "choice without choice text":
 
 
 
-#### Дополнительно: Многострочные списки
+#### Дополнительно: Многострочные списки альтернатив
 Также, в **ink** есть другой формат описания списков для изменения блоков текста. Смотри главу "многострочные блоки" для более подробной информации.
 
 ### Условный текст
@@ -1317,6 +1317,18 @@ A fallback choice is simply a "choice without choice text":
 
 (Обратите внимание, здесь, как и везде, пробелы используются исключительно для удобства чтения и не несут никакой синтаксической нагрузки.)
 
+### Блоки переключения
+
+А также есть настоящий оператор переключения (как `switch` в других языках): 
+
+	{ x:
+	- 0: 	ноль 
+	- 1: 	один 
+	- 2: 	два 
+	- else: куча
+	}
+	
+
 #### Пример: содержимое, релевантное контексту
 
 Отметим, что эти проверки не обязательно должны основываться на переменных. Они могут использовать счётчики посещений, точно так же, как и любые другие условия. Конструкции, подобные указанным ниже, довольно часто используются для логики вида "сделай нечто, что отвечает текущему состоянию игры":
@@ -1362,9 +1374,9 @@ A fallback choice is simply a "choice without choice text":
 
 ...но обратите внимание, что ограниченный синтаксис сплетения и вложений выше не случаен: во избежание путаницы в различных областях вложений вам не разрешается использовать точки сборки внутри условных блоков.
 
-### Многострочные списки
+### Многострочные блоки
 
-Существует ещё один класс многострочных блоков, который расширяет функционал списков, о которых говорилось раньше. Всё последующее вполне правомерно и делает именно то, что вы можете предположить:
+Существует ещё один класс многострочных блоков, который расширяет функционал списков альтернатив, о которых говорилось раньше. Всё последующее вполне правомерно и делает именно то, что вы можете предположить:
 
  	// Последовательность: идём через альтернативы и останавливаемся на последней
 	{ stopping:
@@ -1699,44 +1711,44 @@ Sometimes, it's convenient to define constants to be strings, so you can print t
 	CONST HASTINGS = "Hastings"
 	CONST POIROT = "Poirot"
 	CONST JAPP = "Japp"
-
+	
 	VAR current_chief_suspect = HASTINGS
-
+	
 	=== review_evidence ===
 		{ found_japps_bloodied_glove:
 			~ current_chief_suspect = POIROT
 		}
 		Current Suspect: {current_chief_suspect}
-
+	
 Sometimes giving them values is useful:
 
 	CONST PI = 3.14
 	CONST VALUE_OF_TEN_POUND_NOTE = 10
-
+	
 And sometimes the numbers are useful in other ways:
 
 	CONST LOBBY = 1
 	CONST STAIRCASE = 2
 	CONST HALLWAY = 3
-
+	
 	CONST HELD_BY_AGENT = -1
-
+	
 	VAR secret_agent_location = LOBBY
 	VAR suitcase_location = HALLWAY
-
+	
 	=== report_progress ===
 	{  secret_agent_location = suitcase_location:
 		The secret agent grabs the suitcase!
 		~ suitcase_location = HELD_BY_AGENT  
-
+		
 	-  secret_agent_location < suitcase_location:
 		The secret agent moves forward.
 		~ secret_agent_location++
 	}
-
+	
 Constants are simply a way to allow you to give story states easy-to-understand names.  
 
-## 7) Дополнительно: Game-side logic 
+## 7) Advanced: Game-side logic 
 
 There are two core ways to provide game hooks in the **ink** engine. External function declarations in ink allow you to directly call C# functions in the game, and variable observers are callbacks that are fired in the game when ink variables are modified. Both of these are described in [Running your ink](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md).
 
@@ -1745,7 +1757,7 @@ There are two core ways to provide game hooks in the **ink** engine. External fu
 
 ## 1) Tunnels
 
-The default structure for **ink** stories is a "flat" tree of choices, branching and joining back together, perhaps looping, but with the story always being "at a certain place".
+The default structure for **ink** stories is a "flat" tree of choices, branching and joining back together, perhaps looping, but with the story always being "at a certain place". 
 
 But this flat structure makes certain things difficult: for example, imagine a game in which the following interaction can happen:
 
@@ -1760,43 +1772,43 @@ But this flat structure makes certain things difficult: for example, imagine a g
 
 	=== crossing_the_date_line(-> return_to) ===
 	...
-	-	-> return_to
+	-	-> return_to 
 
 	...
 
 	=== outside_honolulu ===
 	We arrived at the large island of Honolulu.
-	- (postscript)
-		{crossing_the_date_line(-> done)}
+	- (postscript) 
+		-> crossing_the_date_line(-> done)
 	- (done)
-		-> END
+		-> END 
 
 	...
-
+	
 	=== outside_pitcairn_island ===
 	The boat sailed along the water towards the tiny island.
-	- (postscript)
-		{crossing_the_date_line(-> done)}
+	- (postscript) 
+		-> crossing_the_date_line(-> done)
 	- (done)
-		-> END
-
-Both of these locations now call and execute the same segment of storyflow, but once finished they return to where they need to go next.
+		-> END 
+	
+Both of these locations now call and execute the same segment of storyflow, but once finished they return to where they need to go next. 
 
 But what if the section of story being called is more complex - what if it spreads across several knots? Using the above, we'd have to keep passing the 'return-to' parameter from knot to knot, to ensure we always knew where to return.
 
 So instead, **ink** integrates this into the language with a new kind of divert, that functions rather like a subroutine, and is called a 'tunnel'.
 
-### Tunnels run sub-stories
+### Tunnels run sub-stories 
 
 The tunnel syntax looks like a divert, with another divert on the end:
 
 	-> crossing_the_date_line ->
-
-This means "do the crossing_the_date_line story, then continue from here".
-
+	
+This means "do the crossing_the_date_line story, then continue from here". 
+	
 Inside the tunnel itself, the syntax is simplified from the parameterised example: all we do is end the tunnel using the `->->` statement which means, essentially, "go on".
 
-	=== crossing_the_date_line ===
+	=== crossing_the_date_line === 
 	// this is a tunnel!
 	...
 	- 	->->
@@ -1805,12 +1817,12 @@ Note that tunnel knots aren't declared as such, so the compiler won't check that
 
 Tunnels can also be chained together, or finish on a normal divert:
 
-	...
+	... 
 	// this runs the tunnel, then diverts to 'done'
 	-> crossing_the_date_line -> done
 	...
 
-	...
+	... 
 	//this runs one tunnel, then another, then diverts to 'done'
 	-> crossing_the_date_line -> check_foggs_health -> done
 	...
@@ -1818,13 +1830,13 @@ Tunnels can also be chained together, or finish on a normal divert:
 Tunnels can be nested, so the following is valid:
 
 	=== plains ===
-	= night_time
+	= night_time 
 		The dark grass is soft under your feet.
 		+	[Sleep]
 			-> sleep_here -> wake_here -> day_time
-	= day_time
+	= day_time 
 		It is time to move on.
-
+		
 	=== wake_here ===
 		You wake as the sun rises.
 		+	[Eat something]
@@ -1834,16 +1846,16 @@ Tunnels can be nested, so the following is valid:
 
 	=== sleep_here ===
 		You lie down and try to close your eyes.
-		-> monster_attacks ->
+		-> monster_attacks -> 
 		Then it is time to sleep.
 		-> dream ->
 		->->
-
+		
 ... and so on.
 
+				
 
-
-#### Дополнительно: Tunnels use a call-stack
+#### Advanced: Tunnels use a call-stack
 
 Tunnels are on a call-stack, so can safely recurse.
 
