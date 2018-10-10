@@ -1398,99 +1398,99 @@ A fallback choice is simply a "choice without choice text":
 
 ## 4) Временные переменные
 
-### Temporary variables are for scratch calculations
+### Временные переменные — для мелких вычислений
 
-Sometimes, a global variable is unwieldy. **ink** provides temporary variables for quick calculations of things.  
+Иногда использование глобальной переменной слишком громоздко. **ink** предоставляет временные переменные для быстрых вычисление всякого.
 
-	=== near_north_pole ===
-		~ temp number_of_warm_things = 0
-		{ blanket:
-			~ number_of_warm_things++
+	=== рядом_с_северным_полюсом ===
+		~ temp количество_тёплых_вещей = 0
+		{ одеяло:
+			~ количество_тёплых_вещей++
 		}
-		{ ear_muffs:
-			~ number_of_warm_things++
+		{ наушники:
+			~ количество_тёплых_вещей++
 		}
-		{ gloves:
-			~ number_of_warm_things++
+		{ перчатки:
+			~ количество_тёплых_вещей++
 		}
-		{ number_of_warm_things > 2:
-			Despite the snow, I felt incorrigibly snug.
+		{ количество_тёплых_вещей > 2:
+			Несмотря на снег, я чувствовал себя неприлично уютно.
 		- else:
-			That night I was colder than I have ever been.
+			Этой ночью я замёрз сильнее, чем когда-либо за всю мою жизнь.
 		}
 
-The value in a temporary variable is thrown away after the story leaves the stitch in which it was defined. 
+Значение временной переменной выбрасывается после того, как история покинет стежок, в котором эта переменная была определена.
 
-### Knots and stitches can take parameters
+### Узлы и стежки могут принимать параметры
 
-A particularly useful form of temporary variable is a parameter. Any knot or stitch can be given a value as a parameter.
+Особенно полезной формой временной переменной является параметр. Любому узлу или стежку можно передать значение в виде параметра.
 
-	*	[Accuse Hasting]
-			-> accuse("Hastings")
-	*	[Accuse Mrs Black]
-			-> accuse("Claudia")
-	*	[Accuse myself]
-			-> accuse("myself")
+	*	[Обвинить Хастинга]
+			-> обвинить("Хастинга")
+	*	[Обвинить миссис Блэк]
+			-> обвинить("Клаудию")
+	*	[Обвинить себя]
+			-> обвинить("себя")
 
-	=== accuse(who) ===
-		"I accuse {who}!" Poirot declared.
-		"Really?" Japp replied. "{who == "myself":You did it?|{who}?}"
-		"And why not?" Poirot shot back. 	
+	=== обвинить(кого) ===
+		"Я обвиняю {кого}!" — объявил Пуаро.
+		"Правда?" — ответил Япп, — "{кого == "себя":Вы сделали это?|{кого}?}"
+		"А почему нет?" — откликнулся Пуаро. 	
 
 
-... and you'll need to use parameters if you want to pass a temporary value from one stitch to another!	
+... а также вам понадобятся параметры, если вы захотите передать временное значение из одного стежка в другой!
 
-#### Пример: a recursive knot definition
+#### Пример: определение рекурсивного узла
 
-Temporary variables are safe to use in recursion (unlike globals), so the following will work.
+Временные переменные можно безопасно использовать в рекурсии (а глобальные - нет), так что следующий код вполне работает.
 
-	-> add_one_to_one_hundred(0, 1)
+	-> добавь_единицу_до_ста(0, 1)
 
-	=== add_one_to_one_hundred(total, x) ===
-		~ total = total + x
+	=== добавь_единицу_до_ста(всего, x) ===
+		~ всего = всего + x
 		{ x == 100:
-			-> finished(total)
+			-> конец(всего)
 		- else:
-			-> add_one_to_one_hundred(total, x + 1)
+			-> добавь_единицу_до_ста(всего, x + 1)
 		}
 
-	=== finished(total) ===
-		"The result is {total}!" you announce.
-		Gauss stares at you in horror.
+	=== конец(всего) ===
+		"Результат будет {всего}!" — провозглашаете вы.
+		Гаусс в ужасе смотрит на вас.
 		-> END
 
 
-(In fact, this kind of definition is useful enough that **ink** provides a special kind of knot, called, imaginatively enough, a `function`, which comes with certain restrictions and can return a value. See the section below.)
+(На самом деле, такого рода определения настолько удобны, что **ink** предоставляет специальный тип узлов, который — достаточно изобретательно — называется `функцией`, имеет определённые ограничения и может возвращать значение. Смотрите раздел ниже.)
 
 
-#### Дополнительно: sending divert targets as parameters
+#### Дополнительно: пересылка перехода как параметра
 
-Knot/stitch addresses are a type of value, indicated by a `->` character, and can be stored and passed around. The following is therefore legal, and often useful:
+Адрес узла/стежка является значением определённого типа, обозначенным символами `->`, которое можно сохранить в переменной и передавать куда необходимо. Поэтому следующий код вполне легитимен и часто бывает полезным:
 
-	=== sleeping_in_hut ===
-		You lie down and close your eyes.
-		-> generic_sleep (-> waking_in_the_hut)
+	=== спать_в_хижине ===
+		Ты ложишься и закрываешь глаза.
+		-> сон_вообще (-> проснуться_в_хижине)
 
-	===	 generic_sleep (-> waking)
-		You sleep perchance to dream etc. etc.
-		-> waking
+	===	 сон_вообще (-> пробуждение)
+		Вы спите, возможно видите сны, и т.д., и т.п.
+		-> пробуждение
 
-	=== waking_in_the_hut
-		You get back to your feet, ready to continue your journey.
+	=== проснуться_в_хижине
+		Ты поднимаешься на ноги, готовый продолжить путешествие.
 
-...but note the `->` in the `generic_sleep` definition: that's the one case in **ink** where a parameter needs to be typed: because it's too easy to otherwise accidentally do the following:
+...но обратите внимание на `->` в определении `сон_вообще` : это один из случаев в **ink**, когда параметр должен быть типизирован, так как слишком легко, в противном случае, случайно написать следующее:
 
-	=== sleeping_in_hut ===
-		You lie down and close your eyes.
-		-> generic_sleep (waking_in_the_hut)
+	=== спать_в_хижине ===
+		Ты ложишься и закрываешь глаза.
+		-> сон_вообще (проснуться_в_хижине)
 
-... which sends the read count of `waking_in_the_hut` into the sleeping knot, and then attempts to divert to it.
-
-
+... что передаст в узел, реализующий сон, счётчик посещений `проснуться_в_хижине`, а потом попробует перейти на значение этого счётчика.
 
 
 
-## 5) Functions
+
+
+## 5) Функции
 
 The use of parameters on knots means they are almost functions in the usual sense, but they lack one key concept - that of the call stack, and the use of return values.
 
