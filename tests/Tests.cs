@@ -356,8 +356,8 @@ two ({num})
  {
     - true: * [go to a stitch] -> a_stitch
  }
-- gather shouldn't be seen
--> END
+- gather should be seen
+-> DONE
 
 = a_stitch
     result
@@ -366,9 +366,7 @@ two ({num})
 
             Story story = CompileString(storyStr);
 
-            // Extra newline is because there's a choice object sandwiched there,
-            // so it can't be absorbed :-/
-            Assert.AreEqual("start\n", story.Continue());
+            Assert.AreEqual("start\ngather should be seen\n", story.ContinueMaximally());
             Assert.AreEqual(1, story.currentChoices.Count);
 
             story.ChooseChoiceIndex(0);
@@ -382,14 +380,13 @@ two ({num})
             var storyStr =
                 @"
 - first gather
-    * option 1
-    * option 2
+    * [option 1]
+    * [option 2]
 - the main gather
 {false:
-    * unreachable option
+    * unreachable option -> END
 }
-- unrechable gather
-                ";
+- bottom gather";
 
             Story story = CompileString(storyStr);
 
@@ -399,7 +396,7 @@ two ({num})
 
             story.ChooseChoiceIndex(0);
 
-            Assert.AreEqual("option 1\nthe main gather\n", story.ContinueMaximally());
+            Assert.AreEqual("the main gather\nbottom gather\n", story.ContinueMaximally());
             Assert.AreEqual(0, story.currentChoices.Count);
         }
 
@@ -1370,7 +1367,7 @@ VAR globalVal = 5
             story.Continue();
 
             story.ChooseChoiceIndex(0);
-            Assert.AreEqual("option text.  Conditional bit. Next.\n", story.Continue());
+            Assert.AreEqual("option text. Conditional bit. Next.\n", story.Continue());
         }
 
         [Test()]
@@ -1831,7 +1828,7 @@ CONST kX = ""hi""
             Assert.AreEqual(@"test1 ""test2 test3""", story.currentChoices[0].text);
 
             story.ChooseChoiceIndex(0);
-            Assert.AreEqual("test1  test4\n", story.Continue());
+            Assert.AreEqual("test1 test4\n", story.Continue());
         }
 
         [Test()]
@@ -2415,7 +2412,7 @@ Content
             Assert.AreEqual ("1", story.currentChoices[0].text);
             story.ChooseChoiceIndex (0);
 
-            Assert.AreEqual ("1\nEnd of choice\nthis  another\n", story.ContinueMaximally ());
+            Assert.AreEqual ("1\nEnd of choice\nthis another\n", story.ContinueMaximally ());
 
             Assert.AreEqual (0, story.currentChoices.Count);
         }
@@ -2854,6 +2851,7 @@ TODO: b
 { shuffle:
 -   * choice
     nextline
+    -> END
 }
 ";
             var story = CompileString (storyStr);
@@ -2865,6 +2863,20 @@ TODO: b
             story.ChooseChoiceIndex (0);
 
             Assert.AreEqual ("choice\nnextline\n", story.ContinueMaximally ());
+        }
+
+
+        [Test()]
+        public void TestNestedChoiceError()
+        {
+            var storyStr =
+                @"
+{ true:
+    * choice
+}
+";
+            CompileString(storyStr, testingErrors:true);
+            Assert.IsTrue(HadError("need to explicitly divert"));
         }
 
 
@@ -3456,7 +3468,195 @@ text 2
 
             Assert.AreEqual("text1\ntext 2\ntext1\ntext 2\n", story.ContinueMaximally ());
         }
-        
+
+        [Test()]
+        public void TestFloorCeilingAndCasts()
+        {
+            var storyStr =
+        @"
+{FLOOR(1.2)}
+{INT(1.2)}
+{CEILING(1.2)}
+{CEILING(1.2) / 3}
+{INT(CEILING(1.2)) / 3}
+{FLOOR(1)}
+";
+
+            var story = CompileString(storyStr);
+
+            Assert.AreEqual("1\n1\n2\n0.6666667\n0\n1\n", story.ContinueMaximally());
+        }
+
+        [Test()]
+        public void TestListRange()
+        {
+            var storyStr =
+        @"
+LIST Food = Pizza, Pasta, Curry, Paella
+LIST Currency = Pound, Euro, Dollar
+LIST Numbers = One, Two, Three, Four, Five, Six, Seven
+
+VAR all = ()
+~ all = LIST_ALL(Food) + LIST_ALL(Currency)
+{all}
+{LIST_RANGE(all, 2, 3)}
+{LIST_RANGE(LIST_ALL(Numbers), Two, Six)}
+{LIST_RANGE((Pizza, Pasta), -1, 100)} // allow out of range
+";
+
+            var story = CompileString(storyStr);
+
+            Assert.AreEqual(
+@"Pound, Pizza, Euro, Pasta, Dollar, Curry, Paella
+Euro, Pasta, Dollar, Curry
+Two, Three, Four, Five, Six
+Pizza, Pasta
+", story.ContinueMaximally());
+        }
+           
+        // Fix for rogue "can't use as sub-expression" bug
+        [Test()]
+        public void TestUsingFunctionAndIncrementTogether()
+        {
+            var storyStr =
+        @"
+VAR x = 5
+~ x += one()
+    
+=== function one()
+~ return 1
+";
+             
+            // Ensure it just compiles
+            CompileStringWithoutRuntime(storyStr);
+        }
+
+        // Fix for rogue "can't use as sub-expression" bug
+        [Test()]
+        public void TestKnotStitchGatherCounts()
+        {
+            var storyStr =
+        @"
+VAR knotCount = 0
+VAR stitchCount = 0
+
+-> gather_count_test ->
+
+~ knotCount = 0
+-> knot_count_test ->
+
+~ knotCount = 0
+-> knot_count_test ->
+
+-> stitch_count_test ->
+
+== gather_count_test ==
+VAR gatherCount = 0
+- (loop)
+~ gatherCount++
+{gatherCount} {loop}
+{gatherCount<3:->loop}
+->->
+
+== knot_count_test ==
+~ knotCount++
+{knotCount} {knot_count_test}
+{knotCount<3:->knot_count_test}
+->->
+
+
+== stitch_count_test ==
+~ stitchCount = 0
+-> stitch ->
+~ stitchCount = 0
+-> stitch ->
+->->
+
+= stitch
+~ stitchCount++
+{stitchCount} {stitch}
+{stitchCount<3:->stitch}
+->->
+";
+
+            // Ensure it just compiles
+            var story = CompileString(storyStr);
+
+            Assert.AreEqual(
+@"1 1
+2 2
+3 3
+1 1
+2 1
+3 1
+1 2
+2 2
+3 2
+1 1
+2 1
+3 1
+1 2
+2 2
+3 2
+", story.ContinueMaximally());
+        }
+
+        // Fix for threads being incorrectly reused between choices
+        // and the main thread after save/reload
+        // https://github.com/inkle/ink/issues/463
+        [Test()]
+        public void TestChoiceThreadForking()
+        {
+            var storyStr =
+        @"
+-> generate_choice(1) ->
+
+== generate_choice(x) ==
+{true:
+    + A choice
+        Vaue of local var is: {x}
+        -> END
+}
+->->
+";
+
+            // Generate the choice with the forked thread
+            var story = CompileString(storyStr);
+            story.Continue();
+
+            // Save/reload
+            var savedState = story.state.ToJson();
+            story = CompileString(storyStr);
+            story.state.LoadJson(savedState);
+
+            // Load the choice, it should have its own thread still
+            // that still has the captured temp x
+            story.ChooseChoiceIndex(0);
+            story.ContinueMaximally();
+
+            // Don't want this warning:
+            // RUNTIME WARNING: '' line 7: Variable not found: 'x'
+            Assert.IsFalse(story.hasWarning);
+        }
+
+
+        [Test()]
+        public void TestFallbackChoiceOnThread()
+        {
+            var storyStr =
+        @"
+<- knot
+
+== knot
+   ~ temp x = 1
+   *   ->
+       Should be 1 not 0: {x}.
+       -> DONE
+";
+
+            var story = CompileString(storyStr);
+            Assert.AreEqual("Should be 1 not 0: 1.\n", story.Continue());
+        }
 
         // Helper compile function
         protected Story CompileString(string str, bool countAllVisits = false, bool testingErrors = false)

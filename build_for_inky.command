@@ -4,7 +4,7 @@ cd "`dirname "$0"`"
 mono NuGet.exe restore ink.sln
 
 # Build the debug code
-xbuild /p:Configuration=Debug ink.sln
+msbuild /p:Configuration=Debug ink.sln
 
 # Create folders
 mkdir -p BuildForInky
@@ -42,8 +42,8 @@ mkbundle --static --sdk /Library/Frameworks/Mono.framework/Versions/Current --de
 
 cp inklecate_mac ../../../BuildForInky/
 cp inklecate.exe ../../../BuildForInky/inklecate_win.exe
-cp inklecate.exe.mdb ../../../BuildForInky
+cp inklecate.pdb ../../../BuildForInky
 cp ink-engine-runtime.dll ../../../BuildForInky
-cp ink-engine-runtime.dll.mdb ../../../BuildForInky
+cp ink-engine-runtime.pdb ../../../BuildForInky
 cp ink_compiler.dll ../../../BuildForInky
-cp ink_compiler.dll.mdb ../../../BuildForInky
+cp ink_compiler.pdb ../../../BuildForInky

@@ -16,10 +16,10 @@ namespace Ink.Runtime
         /// <summary>
         /// The current version of the ink story file format.
         /// </summary>
-        public const int inkVersionCurrent = 18;
+        public const int inkVersionCurrent = 19;
 
         // Version numbers are for engine itself and story file, rather
-        // than the story state save format (which is um, currently nonexistant)
+        // than the story state save format
         //  -- old engine, new format: always fail
         //  -- new engine, old format: possibly cope, based on this number
         // When incrementing the version number above, the question you
@@ -168,9 +168,9 @@ namespace Ink.Runtime
 
             int formatFromFile = (int)versionObj;
             if (formatFromFile > inkVersionCurrent) {
-                throw new System.Exception ("Version of ink used to build story was newer than the current verison of the engine");
+                throw new System.Exception ("Version of ink used to build story was newer than the current version of the engine");
             } else if (formatFromFile < inkVersionMinimumCompatible) {
-                throw new System.Exception ("Version of ink used to build story is too old to be loaded by this verison of the engine");
+                throw new System.Exception ("Version of ink used to build story is too old to be loaded by this version of the engine");
             } else if (formatFromFile != inkVersionCurrent) {
                 System.Diagnostics.Debug.WriteLine ("WARNING: Version of ink used to build story doesn't match current version of engine. Non-critical, but recommend synchronising.");
             }
@@ -761,7 +761,8 @@ namespace Ink.Runtime
             if (currentChildOfContainer == null) return;
 
             Container currentContainerAncestor = currentChildOfContainer.parent as Container;
-			while (currentContainerAncestor && !_prevContainers.Contains(currentContainerAncestor)) {
+
+            while (currentContainerAncestor && (!_prevContainers.Contains(currentContainerAncestor) || currentContainerAncestor.countingAtStartOnly)) {
 
                 // Check whether this ancestor container is being entered at the start,
                 // by checking whether the child object is the first.
@@ -820,7 +821,15 @@ namespace Ink.Runtime
             choice.targetPath = choicePoint.pathOnChoice;
             choice.sourcePath = choicePoint.path.ToString ();
             choice.isInvisibleDefault = choicePoint.isInvisibleDefault;
-            choice.threadAtGeneration = state.callStack.currentThread.Copy ();
+
+            // We need to capture the state of the callstack at the point where
+            // the choice was generated, since after the generation of this choice
+            // we may go on to pop out from a tunnel (possible if the choice was
+            // wrapped in a conditional), or we may pop out from a thread,
+            // at which point that thread is discarded.
+            // Fork clones the thread, gives it a new ID, but without affecting
+            // the thread stack itself.
+            choice.threadAtGeneration = state.callStack.ForkThread();
 
             // Set final text for the choice
             choice.text = (startText + choiceOnlyText).Trim(' ', '\t');
@@ -1207,52 +1216,17 @@ namespace Ink.Runtime
                     break;
 
                 case ControlCommand.CommandType.ListRange: {
-                        var max = state.PopEvaluationStack ();
-                        var min = state.PopEvaluationStack ();
+                        var max = state.PopEvaluationStack () as Value;
+                        var min = state.PopEvaluationStack () as Value;
 
                         var targetList = state.PopEvaluationStack () as ListValue;
 
                         if (targetList == null || min == null || max == null)
                             throw new StoryException ("Expected list, minimum and maximum for LIST_RANGE");
 
-                        // Allow either int or a particular list item to be passed for the bounds,
-                        // so wrap up a function to handle this casting for us.
-                        Func<Runtime.Object, int> IntBound = (obj) => {
-                            var listValue = obj as ListValue;
-                            if (listValue) {
-                                return (int)listValue.value.maxItem.Value;
-                            }
+                        var result = targetList.value.ListWithSubRange(min.valueObject, max.valueObject);
 
-                            var intValue = obj as IntValue;
-                            if (intValue) {
-                                return intValue.value;
-                            }
-
-                            return -1;
-                        };
-
-                        int minVal = IntBound (min);
-                        int maxVal = IntBound (max);
-                        if (minVal == -1)
-                            throw new StoryException ("Invalid min range bound passed to LIST_VALUE(): " + min);
-
-                        if (maxVal == -1)
-                            throw new StoryException ("Invalid max range bound passed to LIST_VALUE(): " + max);
-
-                        // Extract the range of items from the origin list
-                        ListValue result = new ListValue ();
-                        var origins = targetList.value.origins;
-
-                        if (origins != null) {
-                            foreach(var origin in origins) {
-                                var rangeFromOrigin = origin.ListRange (minVal, maxVal);
-                                foreach (var kv in rangeFromOrigin.value) {
-                                    result.value [kv.Key] = kv.Value;
-                                }
-                            }
-                        }
-                            
-                        state.PushEvaluationStack (result);
+                        state.PushEvaluationStack (new ListValue(result));
                         break;
                     }
 
@@ -1976,9 +1950,9 @@ namespace Ink.Runtime
 
             // Remove observer for all variables
             else {
-                foreach (var keyValue in _variableObservers) {
-                    var varName = keyValue.Key;
-                    _variableObservers [varName] -= observer;
+                var keys = new List<string>(_variableObservers.Keys);
+                foreach (var varName in keys) {
+                    _variableObservers[varName] -= observer;
                 }
             }
         }
@@ -2180,6 +2154,10 @@ namespace Ink.Runtime
                 return false;
 
             var choice = invisibleChoices [0];
+
+            // Invisible choice may have been generated on a different thread,
+            // in which case we need to restore it before we continue
+            state.callStack.currentThread = choice.threadAtGeneration;
 
             ChoosePath (choice.targetPath, incrementingTurnIndex: false);
 
