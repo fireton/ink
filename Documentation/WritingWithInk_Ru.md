@@ -1504,83 +1504,83 @@ A fallback choice is simply a "choice without choice text":
 
 ## 5) Функции
 
-The use of parameters on knots means they are almost functions in the usual sense, but they lack one key concept - that of the call stack, and the use of return values.
+Использование параметров в узлах означает, что они и так уже почти функции в обычном смысле, но им не хватает пары ключевых вещей — стека вызовов и возвращаемых значений.
 
-**ink** includes functions: they are knots, with the following limitations and features:
+**ink** позволяет реализовать функции: это узлы со следующими ограничениями и возможностями:
 
-A function:
-- cannot contain stitches
-- cannot use diverts or offer choices
-- can call other functions
-- can include printed content
-- can return a value of any type
-- can recurse safely
+Функция:
+- не может содержать стежки
+- не может использовать переходы или предлагать выбор
+- может вызывать другие функции
+- может включать выводимый текст
+- может возвращать значение любого типа
+- может безопасно использовать рекурсию
 
-(Some of these may seem quite limiting, but for more story-oriented call-stack-style features, see the section of Tunnels.)
+(Некоторые из ограничений могут показаться весьма суровыми, но если хотите узнать о возможностях, позволяющих использовать стек вызовов, но более ориентированных на построение истории, ознакомьтесь с главой о Туннелях.)
 
-Return values are provided via the `~ return` statement.
+Возврат значения из функции реализуется с помощью оператора `~ return`.
 
-### Defining and calling functions
+### Определение и вызов функций
 
-To define a function, simply declare a knot to be one:
+Чтобы определить функцию, просто объявите узел функцией:
 
-	=== function say_yes_to_everything ===
+	=== function на_всё_говорить_да ===
 		~ return true
 
-	=== function lerp(a, b, k) ===
+	=== function линт(a, b, k) ===
 		~ return ((b - a) * k) + a
 
-Functions are called by name, and with brackets, even if they have no parameters:
+Функции вызываются по имени, и со скобками, даже если у них нет параметров:
 
-	~ x = lerp(2, 8, 0.3)
+	~ x = линт(2, 8, 0.3)
 
-	*	{say_yes_to_everything()} 'Yes.'
+	*	{на_всё_говорить_да()} 'Да.'
 
-As in any other language, a function, once done, returns the flow to wherever it was called from - and despite not being allowed to divert the flow, functions can still call other functions.
+Как и в любом другом языке, функция, завершившись, возвращает исполнение в ту точку, откуда она была вызвана. И, несмотря на то, что функции не позволяется перенаправлять течение истории, функции всё же могут вызывать другие функции.
 
-	=== function say_no_to_nothing ===
-		~ return say_yes_to_everything()
+	=== function ничего_не_отрицать ===
+		~ return на_всё_говорить_да()
 
-### Functions don't have to return anything
+### Функции не обязаны возвращать значение
 
-A function does not need to have a return value, and can simply do something that is worth packaging up:
+Функции не обязательно должны возвращать значение и попросту могут делать что-то, что удобно завернуть в функцию:
 
-	=== function harm(x) ===
-		{ stamina < x:
-			~ stamina = 0
+	=== function вред(x) ===
+		{ жизнь < x:
+			~ жизнь = 0
 		- else:
-			~ stamina = stamina - x
+			~ жизнь = жизнь - x
 		}
 
-...though remember a function cannot divert, so while the above prevents a negative Stamina value, it won't kill a player who hits zero.
+...но всё жепомните, что функция не может изменить повествование, так что код выше может предотвратить отрицательные значения для показателя жизненной силы, но не может "убить" игрока, у которого он достиг нуля.
 
-### Functions can be called inline
+### Функции можно вызывать внутри строки текста
 
-Functions can be called on `~` content lines, but can also be called during a piece of content. In this context, the return value, if there is one, is printed (as well as anything else the function wants to print.) If there is no return value, nothing is printed.
+Функции можно вызывать на строках с `~`, но точно так же их можно вызывать непосредственно в тексте повествования. В этом случае возвращаемое значение (если оно есть) распечатывается в текст (как и что угодно ещё, что функция захочет распечатать). Если возвращаемого значения нет,  ничего не выводится.
 
-Content is, by default, 'glued in', so the following:
+Текст результата по-умолчанию "вклеивается", так что следующее:
 
-	Monsieur Fogg was looking {describe_health(health)}.
+	Месье Фогг выглядел {описать_здоровье(здоровье)}.
 
-	=== function describe_health(x) ===
+	=== function описать_здоровье(x) ===
 	{
 	- x == 100:
-		~ return "spritely"
+		~ return "полным сил"
 	- x > 75:
-		~ return "chipper"
+		~ return "бодрым"
 	- x > 45:
-		~ return "somewhat flagging"
+		~ return "несколько уставшим"
 	- else:
-		~ return "despondent"
+		~ return "угнетённым и подавленным"
 	}
 
-produces:
+выведет:
 
-	Monsieur Fogg was looking despondent.
+	Месье Фогг выглядел угнетённым и подавленным.
 
-#### Examples
+#### Примеры
 
-For instance, you might include:
+Например, вы можете написать так:
 
 	=== function max(a,b) ===
 		{ a < b:
@@ -1590,32 +1590,32 @@ For instance, you might include:
 		}
 
 	=== function exp(x, e) ===
-		// returns x to the power e where e is an integer
+		// возвращает x в степени e, где e - целое
 		{ e <= 0:
 			~ return 1
 		- else:
 			~ return x * exp(x, e - 1)
 		}
 
-Then:
+Затем:
 
-	The maximum of 2^5 and 3^3 is {max(exp(2,5), exp(3,3))}.
+	Наибольшее значение между 2^5 и 3^3 равно {max(exp(2,5), exp(3,3))}.
 
-produces:
+И получить:
 
-	The maximum of 2^5 and 3^3 is 32.
+	Наибольшее значение между 2^5 и 3^3 равно 32.
 
 
-#### Пример: turning numbers into words
+#### Пример: написание чисел словами
 
-The following example is long, but appears in pretty much every inkle game to date. (Recall that a hyphenated line inside multiline curly braces indicates either "a condition to test" or, if the curly brace began with a variable, "a value to compare against".)
+Следующий пример довольно длинный, но подобная функция присутствует практически в каждой ink-игре из выпущенных до сих пор. (Вспомните, что помеченная дефисом строка внутри многострочного блока в фигурных скобках это либо "условие, которое нужно проверить", либо, если за фигурной скобкой сразу следует переменная, то "значение, с которым следует сравнить".)
 
-    === function print_num(x) ===
+    === function число_словами(x) ===
     {
         - x >= 1000:
-            {print_num(x / 1000)} thousand { x mod 1000 > 0:{print_num(x mod 1000)}}
+            {число_словами(x / 1000)} thousand { x mod 1000 > 0:{число_словами(x mod 1000)}}
         - x >= 100:
-            {print_num(x / 100)} hundred { x mod 100 > 0:and {print_num(x mod 100)}}
+            {число_словами(x / 100)} hundred { x mod 100 > 0:and {число_словами(x mod 100)}}
         - x == 0:
             zero
         - else:
@@ -1664,8 +1664,8 @@ which enables us to write things like:
 
 	~ price = 15
 
-	I pulled out {print_num(price)} coins from my pocket and slowly counted them.
-	"Oh, never mind," the trader replied. "I'll take half." And she took {print_num(price / 2)}, and pushed the rest back over to me.
+	I pulled out {число_словами(price)} coins from my pocket and slowly counted them.
+	"Oh, never mind," the trader replied. "I'll take half." And she took {число_словами(price / 2)}, and pushed the rest back over to me.
 
 
 
