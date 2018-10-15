@@ -1613,88 +1613,111 @@ A fallback choice is simply a "choice without choice text":
     === function число_словами(x) ===
     {
         - x >= 1000:
-            {число_словами(x / 1000)} thousand { x mod 1000 > 0:{число_словами(x mod 1000)}}
-        - x >= 100:
-            {число_словами(x / 100)} hundred { x mod 100 > 0:and {число_словами(x mod 100)}}
+            {число_словами(x / 1000)} {числоформа(x/1000, "тысяча", "тысячи", "тысяч")} { x mod 1000 > 0:{число_словами(x mod 1000)}}
         - x == 0:
-            zero
+            ноль
         - else:
+            {x >= 100:
+                {x / 100:
+                    - 1: сто
+                    - 2: двести
+                    - 3: триста
+                    - 4: четыреста
+                    - 5: пятьсот
+                    - 6: шестьсот
+                    - 7: семьсот
+                    - 8: восемьсот
+                    - 9: девятьсот
+                }
+                ~ x = x mod 100
+                { x > 0:<> }
+            }
             { x >= 20:
                 { x / 10:
-                    - 2: twenty
-                    - 3: thirty
-                    - 4: forty
-                    - 5: fifty
-                    - 6: sixty
-                    - 7: seventy
-                    - 8: eighty
-                    - 9: ninety
+                    - 2: двадцать
+                    - 3: тридцать
+                    - 4: сорок
+                    - 5: пятьдесят
+                    - 6: шестьдесят
+                    - 7: семьдесят
+                    - 8: восемьдесят
+                    - 9: девяносто
                 }
-                { x mod 10 > 0:<>-<>}
+                { x mod 10 > 0:<> }
             }
             { x < 10 || x > 20:
                 { x mod 10:
-                    - 1: one
-                    - 2: two
-                    - 3: three
-                    - 4: four        
-                    - 5: five
-                    - 6: six
-                    - 7: seven
-                    - 8: eight
-                    - 9: nine
+                    - 1: одна
+                    - 2: две
+                    - 3: три
+                    - 4: четыре        
+                    - 5: пять
+                    - 6: шесть
+                    - 7: семь
+                    - 8: восемь
+                    - 9: девять
                 }
             - else:     
                 { x:
-                    - 10: ten
-                    - 11: eleven       
-                    - 12: twelve
-                    - 13: thirteen
-                    - 14: fourteen
-                    - 15: fifteen
-                    - 16: sixteen      
-                    - 17: seventeen
-                    - 18: eighteen
-                    - 19: nineteen
+                    - 10: десять
+                    - 11: одиннадцать       
+                    - 12: двенадцать
+                    - 13: тринадцать
+                    - 14: четырнадцать
+                    - 15: пятнадцать
+                    - 16: шестнадцать      
+                    - 17: семнадцать
+                    - 18: восемнадцать
+                    - 19: девятнадцать
                 }
             }
     }
+    
+    === function числоформа(x, один, два, много) ===
+    {x mod 20:
+        - 1: {один}
+        - 2: {два}
+        - 3: {два}
+        - 4: {два}
+        - else: {много}
+    }
 
-which enables us to write things like:
+что позволит нам писать примерно так:
 
-	~ price = 15
+	~ цена = 15
 
-	I pulled out {число_словами(price)} coins from my pocket and slowly counted them.
-	"Oh, never mind," the trader replied. "I'll take half." And she took {число_словами(price / 2)}, and pushed the rest back over to me.
+	Я вытащил монеты из кармана и медленно пересчитал, их оказалось {число_словами(цена)}. 
+    "О, не беспокойтесь!" - ответил торговец, - "Я возьму половину." 
+	С этими словами он отсчитал нужное количество, - "Так, {число_словами(цена / 2)}...", - а остальное подтолкнул обратно ко мне.
 
+**Прим. переводчика:** *В русском языке числительные склоняются по падежам и родам, поэтому функция получилась неуниверсальной (только женский род и именительный падеж). Но ничто не мешает доработать её.*
 
+### Параметры можно передавать по ссылке
 
-### Parameters can be passed by reference
+Параметры функций также могут быть переданы "по ссылке", это означает, что фунция сможет на самом деле менять значение переданной ей переменной, а не будет создавать временную переменную с этим значением.
 
-Function parameters can also be passed 'by reference', meaning that the function can actually alter the the variable being passed in, instead of creating a temporary variable with that value.
+Например, большинство игр от **inkle** включают в себя следующий код:
 
-For instance, most **inkle** stories include the following:
-
-	=== function alter(ref x, k) ===
+	=== function изменить(ref x, k) ===
 		~ x = x + k
 
-Lines such as:
+И строки подобные этим:
 
-	~ gold = gold + 7
-	~ health = health - 4
+	~ золото = золото + 7
+	~ здоровье = здоровье - 4
 
-then become:
+превращаются в:
 
-	~ alter(gold, 7)
-	~ alter(health, -4)
+	~ изменить(золото, 7)
+	~ изменить(здоровье, -4)
 
-which are slightly easier to read, and (more usefully) can be done inline for maximum compactness.
+что несколько легче читается, и (что более полезно) можно выполнить прямо на строке для максимальной компактности.
 
-	*	I ate a biscuit[] and felt refreshed. {alter(health, 2)}
-	* 	I gave a biscuit to Monsieur Fogg[] and he wolfed it down most undecorously. {alter(foggs_health, 1)}
-	-	<> Then we continued on our way.
+	*   Я съел печенье[] и почувствовал прилив сил. {изменить(здоровье, 2)}
+	*   Я отдал печенье месье Фоггу[] и он умял его самым непристойным образом. {изменить(здоровье_фогга, 1)}
+	-   <> Затем мы продолжили наш путь.
 
-Wrapping up simple operations in function can also provide a simple place to put debugging information, if required.
+Обёртывание простых операций в функцию также позволит легко вставить отладочную информацию, если вдруг понадобится.
 
 
 
