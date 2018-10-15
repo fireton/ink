@@ -1717,63 +1717,63 @@ A fallback choice is simply a "choice without choice text":
 	*   Я отдал печенье месье Фоггу[] и он умял его самым непристойным образом. {изменить(здоровье_фогга, 1)}
 	-   <> Затем мы продолжили наш путь.
 
-Обёртывание простых операций в функцию также позволит легко вставить отладочную информацию, если вдруг понадобится.
+Обёртывание простых операций в функцию также позволит легко вывести отладочную информацию, если она вдруг понадобится.
 
 
 
 
-##  6) Constants
+##  6) Константы
 
 
-### Global Constants
+### Глобальные константы
 
-Interactive stories often rely on state machines, tracking what stage some higher level process has reached. There are lots of ways to do this, but the most conveninent is to use constants.
+Интерактивные истории часто полагаются на конечные автоматы, отслеживающие в каком состоянии находится процесс более высокого уровня. Существует масса способов осуществить это, но самым удобным будет использование констант.
 
-Sometimes, it's convenient to define constants to be strings, so you can print them out, for gameplay or debugging purposes.
+Иногда удобно определить константы в виде строк, чтобы их можно было напечатать, во время игры или же для отладки.
 
-	CONST HASTINGS = "Hastings"
-	CONST POIROT = "Poirot"
-	CONST JAPP = "Japp"
+	CONST ХАСТИНГС = "Хастингс"
+	CONST ПУАРО = "Пуаро"
+	CONST ДЖАПП = "Джапп"
 	
-	VAR current_chief_suspect = HASTINGS
+	VAR текущий_главный_подозреваемый = ХАСТИНГС
 	
-	=== review_evidence ===
-		{ found_japps_bloodied_glove:
-			~ current_chief_suspect = POIROT
+	=== пересмотр_улик ===
+		{ найдена_окровавленная_перчатка_джаппа:
+			~ текущий_главный_подозреваемый = ПУАРО
 		}
-		Current Suspect: {current_chief_suspect}
+		Текущий подозреваемый: {текущий_главный_подозреваемый}
 	
-Sometimes giving them values is useful:
+Иногда удобно назначить константам значения:
 
-	CONST PI = 3.14
-	CONST VALUE_OF_TEN_POUND_NOTE = 10
+	CONST ПИ = 3.14
+	CONST ЦЕННОСТЬ_ДЕСЯТИФУНТОВОЙ_БАНКНОТЫ = 10
 	
-And sometimes the numbers are useful in other ways:
+А иногда значения полезны несколько по-другому:
 
-	CONST LOBBY = 1
-	CONST STAIRCASE = 2
-	CONST HALLWAY = 3
+	CONST ВЕСТИБЮЛЬ = 1
+	CONST ЛЕСТНИЦА = 2
+	CONST КОРИДОР = 3
 	
-	CONST HELD_BY_AGENT = -1
+	CONST У_АГЕНТА = -1
 	
-	VAR secret_agent_location = LOBBY
-	VAR suitcase_location = HALLWAY
+	VAR местонахождение_секретного_агента = ВЕСТИБЮЛЬ
+	VAR местонахождение_дипломата = КОРИДОР
 	
-	=== report_progress ===
-	{  secret_agent_location = suitcase_location:
-		The secret agent grabs the suitcase!
-		~ suitcase_location = HELD_BY_AGENT  
+	=== проверить_прогресс ===
+	{  местонахождение_секретного_агента = местонахождение_дипломата:
+		Секретный агент схватил дипломат!
+		~ местонахождение_дипломата = У_АГЕНТА  
 		
-	-  secret_agent_location < suitcase_location:
-		The secret agent moves forward.
-		~ secret_agent_location++
+	-  местонахождение_секретного_агента < местонахождение_дипломата:
+		Секретный агент продвинулся вперёд.
+		~ местонахождение_секретного_агента++
 	}
 	
-Constants are simply a way to allow you to give story states easy-to-understand names.  
+Константы - это просто способ дать вам возможность назначать различным состояниям истории легкочитаемые имена.
 
-## 7) Advanced: Game-side logic 
+## 7) Тема повышенной сложности: Логика на стороне игры
 
-There are two core ways to provide game hooks in the **ink** engine. External function declarations in ink allow you to directly call C# functions in the game, and variable observers are callbacks that are fired in the game when ink variables are modified. Both of these are described in [Running your ink](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md).
+Существует два основных способа взаимодействия между игрой и движком **ink** (который в игру *встроен*). Объявленные внешние функции в ink позволяют вам напрямую вызывать C#-функции в игре, и "наблюдатели переменных" - callback-функции, которые вызываются когда та или иная ink-переменная меняется. Оба способа описаны в [Как запустить вашу ink-игру](RunningYourInk_Ru.md).
 
 # Part 4: Advanced Flow Control
 
