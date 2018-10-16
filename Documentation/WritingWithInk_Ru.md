@@ -1775,157 +1775,157 @@ A fallback choice is simply a "choice without choice text":
 
 Существует два основных способа взаимодействия между игрой и движком **ink** (который в игру *встроен*). Объявленные внешние функции в ink позволяют вам напрямую вызывать C#-функции в игре, и "наблюдатели переменных" - callback-функции, которые вызываются когда та или иная ink-переменная меняется. Оба способа описаны в [Как запустить вашу ink-игру](RunningYourInk_Ru.md).
 
-# Part 4: Advanced Flow Control
+# Часть 4: Расширенные средства управления повествованием
 
 
-## 1) Tunnels
+## 1) Туннели
 
-The default structure for **ink** stories is a "flat" tree of choices, branching and joining back together, perhaps looping, but with the story always being "at a certain place". 
+По умолчанию, структура **ink**-истории - "плоское" дерево выборов, разветвляющееся и соединяющееся вновь, возможно иногда зацикливающееся, но история всегда происходит "в определённом месте".
 
-But this flat structure makes certain things difficult: for example, imagine a game in which the following interaction can happen:
+Но такая плоская структура делает некоторые вещи сложными для реализации. Например, представьте игру, в которой возможно следующее взаимодействие:
 
-	=== crossing_the_date_line ===
-	*	"Monsieur!"[] I declared with sudden horror. "I have just realised. We have crossed the international date line!"
-	-	Monsieur Fogg barely lifted an eyebrow. "I have adjusted for it."
-	*	I mopped the sweat from my brow[]. A relief!
-	* 	I nodded, becalmed[]. Of course he had!
-	*  I cursed, under my breath[]. Once again, I had been belittled!
+	=== пересечение_линии_перемены_даты ===
+	*	"Месье!"[], - вскричал я, внезапно ужаснувшись, - "Я только что понял. Мы пересекли международную линию перемены даты!"
+	-	Месье Фогг слегка приподнял бровь. "Я подумал об этом."
+	*	Я вытер пот со лба[]. Фухх!
+	* 	Я кивнул, успокоившись[]. Ну конечно он подумал.
+	*	Я выругался себе под нос[]. Опять он меня унизил!
 
-...but it can happen at several different places in the story. We don't want to have to write copies of the content for each different place, but when the content is finished it needs to know where to return to. We can do this using parameters:
+...однако, это может произойти в нескольких различных местах в истории. Мы же не хотим писать одно и то же в нескольких местах, но когда этот кусок истории завершится, ему понадобится знать, куда возвращаться. Мы можем решить эту проблему с помощью параметров:
 
-	=== crossing_the_date_line(-> return_to) ===
+	=== пересечение_линии_перемены_даты(-> вернуться_к) ===
 	...
-	-	-> return_to 
+	-	-> вернуться_к 
 
 	...
 
-	=== outside_honolulu ===
-	We arrived at the large island of Honolulu.
-	- (postscript) 
-		-> crossing_the_date_line(-> done)
+	=== в_гонолулу ===
+	Мы прибыли на большой остров Гонолулу.
+	- (постскриптум) 
+		-> пересечение_линии_перемены_даты(-> всё)
 	- (done)
 		-> END 
 
 	...
 	
-	=== outside_pitcairn_island ===
-	The boat sailed along the water towards the tiny island.
-	- (postscript) 
-		-> crossing_the_date_line(-> done)
-	- (done)
+	=== на_остров_питкэрн ===
+	Корабль рассекал волны, направляясь к крошечному островку.
+	- (постскриптум) 
+		-> пересечение_линии_перемены_даты(-> всё)
+	- (всё)
 		-> END 
 	
-Both of these locations now call and execute the same segment of storyflow, but once finished they return to where they need to go next. 
+Обе эти локации смогут теперь вызвать и исполнить один и тот же фрагмент повествования, но когда этот фрагмент завершится, они вернутся туда, куда следует, чтобы двигаться дальше.
 
-But what if the section of story being called is more complex - what if it spreads across several knots? Using the above, we'd have to keep passing the 'return-to' parameter from knot to knot, to ensure we always knew where to return.
+Но что, если фрагмент, который мы вызываем, более сложный - что, если он содержит несколько узлов? Если использовать приведённый выше подход, то нам придётся передавать параметр "вернуться-к" из узла в узел, чтобы гарантировать, что мы всегда знаем, куда вернуться.
 
-So instead, **ink** integrates this into the language with a new kind of divert, that functions rather like a subroutine, and is called a 'tunnel'.
+Чтобы не делать это вручную, **ink** включает в язык этот подход, вместе с новым типом перехода, который действует во многом как подпрограмма, и называется "туннель".
 
-### Tunnels run sub-stories 
+### Туннели запускают под-истории
 
-The tunnel syntax looks like a divert, with another divert on the end:
+По синтаксису туннель выглядит как переход с ещё одним переходом в конце:
 
-	-> crossing_the_date_line ->
+	-> пересечение_линии_перемены_даты ->
 	
-This means "do the crossing_the_date_line story, then continue from here". 
+Это означает "выполнить часть истории пересечение_линии_перемены_даты,  а затем продолжить дальше отсюда". 
 	
-Inside the tunnel itself, the syntax is simplified from the parameterised example: all we do is end the tunnel using the `->->` statement which means, essentially, "go on".
+Внутри самого туннеля синтаксис проще примера с параметром: всё, что нам нужно сделать - закончить туннель, используя `->->`, что означает, по существу, "продолжить дальше".
 
-	=== crossing_the_date_line === 
-	// this is a tunnel!
+	=== пересечение_линии_перемены_даты === 
+	// это туннель!
 	...
 	- 	->->
 
-Note that tunnel knots aren't declared as such, so the compiler won't check that tunnels really do end in `->->` statements, except at run-time. So you will need to write carefully to ensure that all the flows into a tunnel really do come out again.
+Обратите внимание, что узлы туннелей не объявляются таковыми, поэтому компилятор не может проверить, что туннель действительно заканчиватся  записью `->->`, это возможно лишь при выполнении. Так что вам нужно быть осторожными при написании, чтобы повествование, уйдя в туннель, смогло вернуться обратно.
 
-Tunnels can also be chained together, or finish on a normal divert:
+Туннели можно соединять в цепочки или заканчивать обычным переходом:
 
 	... 
-	// this runs the tunnel, then diverts to 'done'
-	-> crossing_the_date_line -> done
+	// тут мы запускаем туннель, а затем переходим на "всё"
+	-> пересечение_линии_перемены_даты -> всё
 	...
 
 	... 
-	//this runs one tunnel, then another, then diverts to 'done'
-	-> crossing_the_date_line -> check_foggs_health -> done
+	// а здесь запускаем туннель, затем ещё один, а потом переходим на "всё"
+	-> пересечение_линии_перемены_даты -> проверить_здоровье_фогга -> всё
 	...
 
-Tunnels can be nested, so the following is valid:
+Туннели могут быть вложенными, так что следующее вполне легально:
 
-	=== plains ===
-	= night_time 
-		The dark grass is soft under your feet.
-		+	[Sleep]
-			-> sleep_here -> wake_here -> day_time
-	= day_time 
-		It is time to move on.
+	=== равнины ===
+	= ночное_время
+		Тёмная трава пружинит под твоими ногами.
+		+	[Спать]
+			-> спать_тут -> проснуться_тут -> дневное_время
+	= дневное_время 
+		Время продолжать путь.
 		
-	=== wake_here ===
-		You wake as the sun rises.
-		+	[Eat something]
-			-> eat_something ->
-		+	[Make a move]
+	=== проснуться_тут ===
+		Ты пробуждаешься с восходом солнца.
+		+	[Съесть что-нибудь]
+			-> съесть_что_нибудь ->
+		+	[Двинуться дальше]
 		-	->->
 
-	=== sleep_here ===
-		You lie down and try to close your eyes.
-		-> monster_attacks -> 
-		Then it is time to sleep.
-		-> dream ->
+	=== спать_тут ===
+		Ты ложишься и стараешься закрыть глаза.
+		-> атака_монстра -> 
+		А теперь время поспать.
+		-> сон ->
 		->->
 		
-... and so on.
+... и так далее.
 
 				
 
-#### Advanced: Tunnels use a call-stack
+#### Дополнительно: Туннели используют стек вызовов
 
-Tunnels are on a call-stack, so can safely recurse.
-
-
-## 2) Threads
-
-So far, everything in ink has been entirely linear, despite all the branching and diverting. But it's actually possible for a writer to 'fork' a story into different sub-sections, to cover more possible player actions.
-
-We call this 'threading', though it's not really threading in the sense that computer scientists mean it: it's more like stitching in new content from various places.
-
-Note that this is definitely an advanced feature: the engineering stories becomes somewhat more complex once threads are involved!
-
-### Threads join multiple sections together
-
-Threads allow you to compose sections of content from multiple sources in one go. For example:
-
-    == thread_example ==
-    I had a headache; threading is hard to get your head around.
-    <- conversation
-    <- walking
+Туннели используют стек вызовов, так что они могут безопасно рекурсировать.
 
 
-    == conversation ==
-    It was a tense moment for Monty and me.
-     * "What did you have for lunch today?"[] I asked.
-        "Spam and eggs," he replied.
-     * "Nice weather, we're having,"[] I said.
-        "I've seen better," he replied.
-     - -> house
+## 2) Нити
 
-    == walking ==
-    We continued to walk down the dusty road.
-     * [Continue walking]
-        -> house
+До сих пор всё в **ink** было довольно-таки линейным, несмотря на на все ветвления и переходы. Но на самом деле автор может "распилить" историю на несколько различных подразделов с тем, чтобы покрыть больше возможных действий игрока.
 
-    == house ==
-    Before long, we arrived at his house.
+Мы называем это "нанизыванием" (как бусины на нить), это похоже на связывание воедино содержимого из нескольких разных мест.
+
+Обратите внимание, что это действительно возможность повышенной сложности: написание историй становится весьма более сложным, когда используются нити.
+
+### Нити связывают несколько частей воедино
+
+Нити позволяют вам скомпоновать части содержимого из нескольких источников за один приём. Например:
+
+    == пример_нити ==
+    У меня болела голова. В этих нитях чёрт ногу сломит.
+    <- беседа
+    <- прогулка
+
+
+    == беседа ==
+    Это был напряжённый момент для нас с Монти.
+     * "Что у тебя было сегодня на обед?"[] - спросил я.
+        "Ветчина и яичница," - ответил он.
+     * "Неплохая погода сегодня"[] - сказал я.
+        "Я видел и получше," - ответил он.
+     - -> дом
+
+    == прогулка ==
+    Мы продолжали идти по пыльной дороге.
+     * [Продолжать идти]
+        -> дом
+
+    == дом ==
+    Вскоре мы добрались до его дома.
     -> END
 
-It allows multiple sections of story to combined together into a single section:
+Этот код позволяет нескольким частям истории собраться в единый раздел:
 
-    I had a headache; threading is hard to get your head around.
-    It was a tense moment for Monty and me.
-    We continued to walk down the dusty road.
-    1: "What did you have for lunch today?"
-    2: "Nice weather, we're having,"
-    3: Continue walking
+    У меня болела голова. В этих нитях чёрт ногу сломит.
+    Это был напряжённый момент для нас с Монти.
+    Мы продолжали идти по пыльной дороге.
+    1: "Что у тебя было сегодня на обед?"
+    2: "Неплохая погода сегодня"
+    3: Продолжать идти
 
 On encountering a thread statement such as `<- conversation`, the compiler will fork the story flow. The first fork considered will run the content at `conversation`, collecting up any options it finds. Once it has run out of flow here it'll then run the other fork.
 
@@ -2035,7 +2035,7 @@ Threads can be used to add the same choice into lots of different places. When u
 		[Review my case notes]
 		// the conditional ensures you don't get the option to check repeatedly
 	 	{I|Once again, I} flicked through the notes I'd made so far. Still not obvious suspects.
-	- 	(done) -> go_back_to
+	- 	(всё) -> go_back_to
 
 Note this is different than a tunnel, which runs the same block of content but doesn't give a player a choice. So a layout like:
 
@@ -2185,7 +2185,7 @@ or even...
 	<- cook_with("kettle", kettleState)
 	<- cook_with("pot", potState)
 	<- cook_with("microwave", microwaveState)
-	- (done)
+	- (всё)
 
 Note that the "heatedWaterStates" list is still available as well, and can still be tested, and take a value.
 
@@ -3101,7 +3101,7 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 	        'All right. It's a start,' Joe replied.
 	        -> done
 	    -   -> found
-	-   (done)
+	-   (всё)
 	    {
 	    - between(joe_wants_better_prints, joe_got_better_prints):
 	        ~ learn(joe_got_better_prints)
