@@ -1950,11 +1950,11 @@ But for games with lots of independent moving parts, threads quickly become esse
 	
 	// Here's the thread, which mixes in dialogue for characters you share the room with at the moment.
 	
-	== characters_present
+	== characters_present(room)
 		{ generals_location == player_location:
 			<- general_conversation
 		}
-		{ doctors_location == player_location:
+		{ doctors_location == room:
 			<- doctor_conversation
 		}
 		
