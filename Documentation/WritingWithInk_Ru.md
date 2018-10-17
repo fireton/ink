@@ -1927,58 +1927,58 @@ A fallback choice is simply a "choice without choice text":
     2: "Неплохая погода сегодня"
     3: Продолжать идти
 
-On encountering a thread statement such as `<- conversation`, the compiler will fork the story flow. The first fork considered will run the content at `conversation`, collecting up any options it finds. Once it has run out of flow here it'll then run the other fork.
+Встретив указание на нить, такое как `<- беседа`, компилятор как бы разветвляет повествование. Первая ветвь запустит содержимое узла  `conversation`, собрав все варианты выбора, которые встретит. Как только компилятор исчерпает содержимое узла, он запустит вторую ветвь. 
 
-All the content is collected and shown to the player. But when a choice is chosen, the engine will move to that fork of the story and collapse and discard the others.
+Всё содержимое будет собрано воеедино и выведено игроку. Но когда выбор сделан, движок перейдёт на соответствующую ветвь истории и отбросит все остальные.
 
-Note that global variables are *not* forked, including the read counts of knots and stitches.
+Имейте в виду, что глобальные переменные *не* разветвляются. Это включает и счётчики посещений узлов и стежков.
 
-### Uses of threads
+### Использование нитей
 
-In a normal story, threads might never be needed.
+В обычной истории нити могут вообще никогда не понадобиться.
 
-But for games with lots of independent moving parts, threads quickly become essential. Imagine a game in which characters move independently around a map: the main story hub for a room might look like the following:
+Но в играх с большим количеством независимо движущихся частей, нити быстро становятся незаменимым инструментом. Представьте себе игру, в которой персонажи двигаются по карте независимо друг от друга, в такой игре главная локация для комнаты может выглядеть примерно так:
 
-	CONST HALLWAY = 1
-	CONST OFFICE = 2
+	CONST КОРИДОР = 1
+	CONST ОФИС = 2
 
-	VAR player_location = HALLWAY
-	VAR generals_location = HALLWAY
-	VAR doctors_location = OFFICE
+	VAR где_игрок = КОРИДОР
+	VAR где_генерал = КОРИДОР
+	VAR где_доктор = ОФИС
 
-	== run_player_location
+	== проверить_положение_игрока
 		{
-			- player_location == HALLWAY: -> hallway
+			- где_игрок == КОРИДОР: -> коридор
 		}
 
-	== hallway ==
-		<- characters_present
-		*	[Drawers]	-> examine_drawers
-		* 	[Wardrobe] -> examine_wardrobe
-		*  [Go to Office] 	-> go_office
-		-	-> run_player_location
-	= examine_drawers
-		// etc...
+	== коридор ==
+		<- кто_здесь
+		*	[Ящики стола]	-> обыскать_ящики
+		* 	[Гардероб] 		-> обыскать_гардероб
+		*	[Идти в офис] 	-> в_офис
+		-	-> проверить_положение_игрока
+	= обыскать_ящики
+		// и т.д. и т.п...
 
-	// Here's the thread, which mixes in dialogue for characters you share the room with at the moment.
+	// А это нить, которая смешивает диалоги с персонажами, которые находятся в той же комнате, что и вы
 
-	== characters_present(room)
-		{ generals_location == player_location:
-			<- general_conversation
+	== кто_здесь
+		{ где_генерал == где_игрок:
+			<- диалог_генерал
 		}
-		{ doctors_location == room:
-			<- doctor_conversation
+		{ где_доктор == где_игрок:
+			<- диалог_доктор
 		}
 
-	== general_conversation
-		*	[Ask the General about the bloodied knife]
-			"It's a bad business, I can tell you."
-		-	-> run_player_location
+	== диалог_генерал
+		*	[Спросить генерала об окровавленном ноже]
+			"Всё что я могу сказать - это плохо кончится."
+		-	-> проверить_положение_игрока
 
-	== doctor_conversation
-		*	[Ask the Doctor about the bloodied knife]
-			"There's nothing strange about blood, is there?"
-		-	-> run_player_location
+	== диалог_доктор
+		*	[Спросить доктора об окровавленном ноже]
+			"В крови ведь нет ничего странного. Разве нет?"
+		-	-> проверить_положение_игрока
 
 
 
