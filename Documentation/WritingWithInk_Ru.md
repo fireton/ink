@@ -1982,12 +1982,12 @@ A fallback choice is simply a "choice without choice text":
 
 
 
-Note in particular, that we need an explicit way to return the player who has gone down a side-thread to return to the main flow. In most cases, threads will either need a parameter telling them where to return to, or they'll need to end the current story section.
+Особо обратите внимание на тот факт, что нам приходится явно указывать для игрока, который прошёл под-историю в нити, способ возврата в основное повествование. В большинстве случаев, нити либо потребуется параметр, содержащий точку возврата, либо же нить попросту завершит текущую главу основной истории.
 
 
-### When does a side-thread end?
+### Когда заканчивается нить?
 
-Side-threads end when they run out of flow to process: and note, they collect up options to display later (unlike tunnels, which collect options, display them and follow them until they hit an explicit return, possibly several moves later).
+Отдельные нити заканчиваюся, когда у них заканчивается содержимое. И заметьте, они собирают варианты выбора для того, чтобы показать их позже (в отличие от туннелей, которые собирают варианты выбора, показывают их и следуют выбранным вариантам до тех пор, пока не встретят явный выход, возможно, несколькими ходами позднее).
 
 Sometimes a thread has no content to offer - perhaps there is no conversation to have with a character after all, or perhaps we have simply not written it yet. In that case, we must mark the end of the thread explicitly.
 
