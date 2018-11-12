@@ -1989,19 +1989,19 @@ A fallback choice is simply a "choice without choice text":
 
 Отдельные нити заканчиваюся, когда у них заканчивается содержимое. И заметьте, они собирают варианты выбора для того, чтобы показать их позже (в отличие от туннелей, которые собирают варианты выбора, показывают их и следуют выбранным вариантам до тех пор, пока не встретят явный выход, возможно, несколькими ходами позднее).
 
-Sometimes a thread has no content to offer - perhaps there is no conversation to have with a character after all, or perhaps we have simply not written it yet. In that case, we must mark the end of the thread explicitly.
+Иногда в нити просто нет содержания - возможно, с персонажем не о чем больше общаться, или же мы просто его ещё не написали. В таком случае, нам следует явно отметить, что нить закончилась.
 
-If we didn't, the end of content might be a story-bug or a hanging story thread, and we want the compiler to tell us about those.
+Если мы этого не сделали, то конец содержимого окажется ошибкой или "подвисшей" нитью, о чём мы предпочли бы узнать от компилятора.
 
-### Using `-> DONE`
+### Использование `-> DONE`
 
-So cases where we want to mark the end of a thread, we use `-> DONE`: meaning "the flow intentionally ends here".
+Итак, в случаях, когда мы хотим пометить конец нити, мы используем `-> DONE`, что значит "повествование намеренно заканчивается здесь".
 
-Note that we don't need a `-> DONE` if the flow ends with options that fail their conditions. The engine treats this as a valid, intentional, end of flow state.
+Обратите внимание, что в `-> DONE` нет необходимости, если код заканчивается вариантами выбора, у которых не прошли условия. Движок считает это валидным, намеренным окончанием повествования.
 
-**You do not need a `-> DONE` in a thread after an option has been chosen**. Once an option is chosen, a thread is no longer a thread - it is simply the normal story flow once more.
+**Вам не нужен `-> DONE` в нити после того, как вариант выбора был выбран**. Как только он выбран, нить уже не нить, а снова обычное повествование.
 
-Using `-> END` in this case will not end the thread, but the whole story flow. (And this is the real reason for having two different ways to end flow.)
+Использование `-> END` в данном случае завершит не нить, а всю историю целиком. (И это, собственно, и есть причина, для чего нужны два разных способа закончить повествование.)
 
 
 #### Пример: adding the same choice to several places
