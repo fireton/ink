@@ -2004,38 +2004,38 @@ A fallback choice is simply a "choice without choice text":
 Использование `-> END` в данном случае завершит не нить, а всю историю целиком. (И это, собственно, и есть причина, для чего нужны два разных способа закончить повествование.)
 
 
-#### Пример: adding the same choice to several places
+#### Пример: добавление одного и того же варианта выбора в разные места
 
 Threads can be used to add the same choice into lots of different places. When using them this way, it's normal to pass a divert as a parameter, to tell the story where to go after the choice is done.
 
-	=== outside_the_house
-	The front step. The house smells. Of murder. And lavender.
-	- (top)
-		<- review_case_notes(-> top)
-		*	[Go through the front door]
-			I stepped inside the house.
-			-> the_hallway
-		* 	[Sniff the air]
-			I hate lavender. It makes me think of soap, and soap makes me think about my marriage.
-			-> top
+	=== снаружи_дома
+	Крыльцо. Дом пахнет. Убийством. И лавандой.
+	- (верх)
+		<- просмотреть_заметки_по_делу(-> верх)
+		*	[Пройти во входную дверь]
+			Я шагнул внутрь дома.
+			-> коридор
+		*	[Понюхать воздух]
+			Я ненавижу лаванду. Она заставляет меня думать о мыле. А мыло заставляет меня думать о моём браке.
+			-> верх
 
-	=== the_hallway
-	The hallway. Front door open to the street. Little bureau.
-	- (top)
-		<- review_case_notes(-> top)
-		*	[Go through the front door]
-			I stepped out into the cool sunshine.
-			-> outside_the_house
-		* 	[Open the bureau]
-			Keys. More keys. Even more keys. How many locks do these people need?
-			-> top
+	=== коридор
+	Коридор. Входная дверь открыта на улицу. Маленький комод.
+	- (верх)
+		<- просмотреть_заметки_по_делу(-> верх)
+		*	[Выйти через переднюю дверь]
+			Я шагнул наружу под холодный солнечный свет.
+			-> снаружи_дома
+		* 	[Открыть комод]
+			Ключи. Ещё ключи. И ещё ключи. Сколько замков нужно этим людям?
+			-> верх
 
-	=== review_case_notes(-> go_back_to)
-	+	{not done || TURNS_SINCE(-> done) > 10}
-		[Review my case notes]
-		// the conditional ensures you don't get the option to check repeatedly
-	 	{I|Once again, I} flicked through the notes I'd made so far. Still not obvious suspects.
-	- 	(всё) -> go_back_to
+	=== просмотреть_заметки_по_делу(-> вернуться_к)
+	+	{not всё || TURNS_SINCE(-> всё) > 10}
+		[Просмотреть мои заметки по делу]
+		// условие гарантирует, что вы не будете получать этот вариант выбора постоянно
+		{Я|Я снова} пролистал заметки, которые сделал на текущий момент. Всё ещё нет явных подозреваемых.
+	-	(всё) -> вернуться_к
 
 Note this is different than a tunnel, which runs the same block of content but doesn't give a player a choice. So a layout like:
 
@@ -2061,9 +2061,9 @@ A game which uses ink as a script rather than a literal output might often gener
 
 ```
 === the_kitchen
-- (top)
-	<- drawers(-> top)
-	<- cupboards(-> top)
+- (верх)
+	<- drawers(-> верх)
+	<- cupboards(-> верх)
 	<- room_exits
 = drawers (-> goback)
 	// choices about the drawers...
@@ -2179,7 +2179,7 @@ or even...
 	+ 	{thingToBoil == cold} [Turn on {nameOfThing}]
 	  	The {nameOfThing} begins to heat up.
 		~ thingToBoil = boiling
-		-> do_cooking.done
+		-> do_cooking.всё
 
 	=== do_cooking
 	<- cook_with("kettle", kettleState)
@@ -2580,7 +2580,7 @@ To demonstrate a few of these ideas, here's a functional Tower of Hanoi example,
 
 	=== gameloop
 	    Staring down from the heavens you see your followers finishing construction of the last of the great temples, ready to begin the work.
-	- (top)
+	- (верх)
 	    +  (describe) {true || TURNS_SINCE(-> describe) >= 2 || !describe} [ Regard the temples]
 	        You regard each of the temples in turn. On each is stacked the rings of stone. {describe_pillar(1)} {describe_pillar(2)} {describe_pillar(3)}
 	    <- move_post(1, 2, post1, post2)   
@@ -2604,7 +2604,7 @@ To demonstrate a few of these ideas, here's a functional Tower of Hanoi example,
 	            - The priests below fight a war over what colour robes to wear, but while they fall and die, the work is still completed.
 	            }
 	        }
-	    -> top
+	    -> верх
 
 
 
@@ -2876,9 +2876,9 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 	=== murder_scene ===
 	    The bedroom. This is where it happened. Now to look for clues.
-	- (top)
+	- (верх)
 	    { bedroomLightState ? seen:     <- seen_light  }
-	    <- compare_prints(-> top)
+	    <- compare_prints(-> верх)
 
 	    *   (dobed) [The bed...]
 	        The bed was low to the ground, but not so low something might not roll underneath. It was still neatly made.
@@ -2909,7 +2909,7 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 	        * *     {TURNS_SINCE(-> dobed) > 1} [Something else?]
 	                I took a step back from the bed and looked around.
-	                -> top
+	                -> верх
 	        - -     -> bedhub
 
 	    *   {darkunder && bedroomLightState ? on_floor && bedroomLightState ? on}
@@ -2924,14 +2924,14 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 	        * *     {reaching > 1 } [ Stand up ]
 	                I stood up once more, and brushed my coat down.
-	                -> top
+	                -> верх
 
 	    *   (knock_with_cane) {reaching && TURNS_SINCE(-> reaching) >= 4 &&  Inventory ? cane } [Use the cane to reach under the bed ]
 	        Positioning the cane above the carpet, I gave the glinting thing a sharp tap. It slid out from the under the foot of the bed.
 	        ~ move_to_supporter( knifeState, on_floor )
 	        * *     (standup) [Stand up]
 	                Satisfied, I stood up, and saw I had knocked free a bloodied knife.
-	                -> top
+	                -> верх
 	        * *     [Look under the bed once more]
 	                Moving the cane aside, I looked under the bed once more, but there was nothing more there.
 	                -> standup        
@@ -2962,7 +2962,7 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 	        * *     {deskstate >= 2} [Something else?]
 	                I took a step away from the desk once more.
-	                -> top
+	                -> верх
 	        - -     -> deskstate
 
 	    *     {(Inventory ? cane) && TURNS_SINCE(-> deskstate) <= 2} [Swoosh the cane]    
@@ -2995,7 +2995,7 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 	                        ~ GlassState = steam_gone
 	                        <> The steam from my breath faded.
 	                    }
-	                    -> top
+	                    -> верх
 	                }
 	                I leant back from the glass. My breath had steamed up the pane a little.
 	               ~ GlassState = steamed
@@ -3003,10 +3003,10 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 
 
-	    *   {top >= 5} [Leave the room]
+	    *   {верх >= 5} [Leave the room]
 	        I'd seen enough. I {bedroomLightState ? on:switched off the lamp, then} turned and left the room.
 	        -> joe_in_hall
-	    -   -> top
+	    -   -> верх
 
 	= see_prints_on_glass
 	    ~ learn(fingerprints_on_glass)
@@ -3053,14 +3053,14 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 	        [Move the light to the floor ]
 	        ~ move_to_supporter(bedroomLightState, on_floor)
 	        I picked the light up and set it down on the floor.
-	    -   -> top
+	    -   -> верх
 
 	=== joe_in_hall
 	    My police contact, Joe, was waiting in the hall. 'So?' he demanded. 'Did you find anything interesting?'
 	- (found)
 	    *   {found == 1} 'Nothing.'
 	        He shrugged. 'Shame.'
-	        -> done
+	        -> всё
 	    *   { Inventory ? knife } 'I found the murder weapon.'
 	        'Good going!' Joe replied with a grin. 'We thought the murderer had gotten rid of it. I'll bag that for you now.'
 	        ~ move_to_supporter(knifeState, with_joe)
@@ -3099,7 +3099,7 @@ Finally, here's a long example, demonstrating a lot of ideas from this section i
 
 	    *   { found > 1} 'That's it.'
 	        'All right. It's a start,' Joe replied.
-	        -> done
+	        -> всё
 	    -   -> found
 	-   (всё)
 	    {
