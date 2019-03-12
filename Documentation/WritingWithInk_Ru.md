@@ -2006,7 +2006,7 @@ A fallback choice is simply a "choice without choice text":
 
 #### Пример: добавление одного и того же варианта выбора в разные места
 
-Threads can be used to add the same choice into lots of different places. When using them this way, it's normal to pass a divert as a parameter, to tell the story where to go after the choice is done.
+Нити можно использовать, чтобы добавить один и тот же вариант выбора в разные места истории. Если вы используете их таким образом, то нормально будет передать переход как параметр, чтобы история "знала", куда идти после того, как выбор сделан.
 
 	=== снаружи_дома
 	Крыльцо. Дом пахнет. Убийством. И лавандой.
@@ -2037,22 +2037,22 @@ Threads can be used to add the same choice into lots of different places. When u
 		{Я|Я снова} пролистал заметки, которые сделал на текущий момент. Всё ещё нет явных подозреваемых.
 	-	(всё) -> вернуться_к
 
-Note this is different than a tunnel, which runs the same block of content but doesn't give a player a choice. So a layout like:
+Обратите внимание, что это отличается от туннеля, который проигрывает такой же блок текста, но не даёт игроку какого-либо выбора. Так что такой код:
 
-	<- childhood_memories(-> next)
-	*	[Look out of the window]
-	 	I daydreamed as we rolled along...
-	 - (next) Then the whistle blew...
+	<- воспоминания_детства(-> дальше)
+	*	[Выглянуть в окно]
+	 	Я задумался под стук колёс...
+	 - (дальше) И тут прозвучал свисток...
 
-might do exactly the same thing as:
+может делать в точности то же, что и этот:
 
-	*	[Remember my childhood]
-		-> think_back ->
-	*	[Look out of the window]
-		I daydreamed as we rolled along...
-	- 	(next) Then the whistle blew... 	
+	*	[Вспомнить детство]
+		-> вспомнить_разное ->
+	*	[Выглянуть в окно]
+		Я задумался под стук колёс...
+	- 	(дальше) И тут прозвучал свисток... 	
 
-but as soon as the option being threaded in includes multiple choices, or conditional logic on choices (or any text content, of course!), the thread version becomes more practical.
+но как только ответвление, в которое мы уводим игрока, будет включать в себя множественный выбор или логику с условиями (или, конечно, любое текстовое содержание!), версия с нитью становится более практичной.
 
 
 #### Пример: organisation of wide choice points
