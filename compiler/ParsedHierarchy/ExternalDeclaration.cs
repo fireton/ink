@@ -3,14 +3,18 @@ using System.Collections.Generic;
 
 namespace Ink.Parsed
 {
-    internal class ExternalDeclaration : Parsed.Object, INamedContent
+    public class ExternalDeclaration : Parsed.Object, INamedContent
     {
-        public string name { get; set; }
+        public string name
+        {
+            get { return identifier?.name; }
+        }
+        public Identifier identifier { get; set; }
         public List<string> argumentNames { get; set; }
 
-        internal ExternalDeclaration (string name, List<string> argumentNames)
+        public ExternalDeclaration (Identifier identifier, List<string> argumentNames)
         {
-            this.name = name;
+            this.identifier = identifier;
             this.argumentNames = argumentNames;
         }
 

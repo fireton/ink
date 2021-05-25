@@ -1,19 +1,23 @@
 ﻿
 namespace Ink.Parsed
 {
-    internal class Gather : Parsed.Object, IWeavePoint, INamedContent
-    { 
-        public string name { get; set; }
+    public class Gather : Parsed.Object, IWeavePoint, INamedContent
+    {
+        public string name
+        {
+            get { return identifier?.name; }
+        }
+        public Identifier identifier { get; set; }
         public int indentationDepth { get; protected set; }
 
         public Runtime.Container runtimeContainer { get { return (Runtime.Container) runtimeObject; } }
 
-        public Gather (string name, int indentationDepth)
+        public Gather (Identifier identifier, int indentationDepth)
         {
-            this.name = name;
+            this.identifier = identifier;
             this.indentationDepth = indentationDepth;
         }
-            
+
         public override Runtime.Object GenerateRuntimeObject ()
         {
             var container = new Runtime.Container ();
@@ -21,7 +25,6 @@ namespace Ink.Parsed
 
             if (this.story.countAllVisits) {
                 container.visitsShouldBeCounted = true;
-                container.turnIndexShouldBeCounted = true;
             }
 
             container.countingAtStartOnly = true;
@@ -40,8 +43,8 @@ namespace Ink.Parsed
         {
             base.ResolveReferences (context);
 
-            if( name != null && name.Length > 0 )
-                context.CheckForNamingCollisions (this, name, Story.SymbolType.SubFlowAndWeave);
+            if( identifier != null && identifier.name.Length > 0 )
+                context.CheckForNamingCollisions (this, identifier, Story.SymbolType.SubFlowAndWeave);
         }
     }
 }

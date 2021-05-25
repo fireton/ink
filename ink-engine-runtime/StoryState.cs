@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.IO;
 
 namespace Ink.Runtime
 {
@@ -17,15 +18,31 @@ namespace Ink.Runtime
         /// <summary>
         /// The current version of the state save file JSON-based format.
         /// </summary>
-        public const int kInkSaveStateVersion = 8;
+        public const int kInkSaveStateVersion = 9; // new: multi-flows, but backward compatible
         const int kMinCompatibleLoadVersion = 8;
+
+        /// <summary>
+        /// Callback for when a state is loaded
+        /// </summary>
+        public event Action onDidLoadState;
 
         /// <summary>
         /// Exports the current state to json format, in order to save the game.
         /// </summary>
         /// <returns>The save state in json format.</returns>
         public string ToJson() {
-            return SimpleJson.DictionaryToText (jsonToken);
+            var writer = new SimpleJson.Writer();
+            WriteJson(writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Exports the current state to json format, in order to save the game.
+        /// For this overload you can pass in a custom stream, such as a FileStream.
+        /// </summary>
+        public void ToJson(Stream stream) {
+            var writer = new SimpleJson.Writer(stream);
+            WriteJson(writer);
         }
 
         /// <summary>
@@ -34,7 +51,9 @@ namespace Ink.Runtime
         /// <param name="json">The JSON string to load.</param>
         public void LoadJson(string json)
         {
-            jsonToken = SimpleJson.TextToDictionary (json);
+            var jObject = SimpleJson.TextToDictionary (json);
+            LoadJsonObj(jObject);
+            if(onDidLoadState != null) onDidLoadState();
         }
 
         /// <summary>
@@ -52,13 +71,91 @@ namespace Ink.Runtime
         public int VisitCountAtPathString(string pathString)
         {
             int visitCountOut;
-            if (visitCounts.TryGetValue (pathString, out visitCountOut))
+
+            if ( _patch != null ) {
+                var container = story.ContentAtPath(new Path(pathString)).container;
+                if (container == null)
+                    throw new Exception("Content at path not found: " + pathString);
+
+                if( _patch.TryGetVisitCount(container, out visitCountOut) )
+                    return visitCountOut;
+            }
+
+            if (_visitCounts.TryGetValue(pathString, out visitCountOut))
                 return visitCountOut;
 
             return 0;
         }
 
-		internal int callstackDepth {
+        public int VisitCountForContainer(Container container)
+        {
+            if (!container.visitsShouldBeCounted)
+            {
+                story.Error("Read count for target (" + container.name + " - on " + container.debugMetadata + ") unknown.");
+                return 0;
+            }
+
+            int count = 0;
+            if (_patch != null && _patch.TryGetVisitCount(container, out count))
+                return count;
+                
+            var containerPathStr = container.path.ToString();
+            _visitCounts.TryGetValue(containerPathStr, out count);
+            return count;
+        }
+
+        public void IncrementVisitCountForContainer(Container container)
+        {
+            if( _patch != null ) {
+                var currCount = VisitCountForContainer(container);
+                currCount++;
+                _patch.SetVisitCount(container, currCount);
+                return;
+            }
+
+            int count = 0;
+            var containerPathStr = container.path.ToString();
+            _visitCounts.TryGetValue(containerPathStr, out count);
+            count++;
+            _visitCounts[containerPathStr] = count;
+        }
+
+        public void RecordTurnIndexVisitToContainer(Container container)
+        {
+            if( _patch != null ) {
+                _patch.SetTurnIndex(container, currentTurnIndex);
+                return;
+            }
+
+            var containerPathStr = container.path.ToString();
+            _turnIndices[containerPathStr] = currentTurnIndex;
+        }
+
+        public int TurnsSinceForContainer(Container container)
+        {
+            if (!container.turnIndexShouldBeCounted)
+            {
+                story.Error("TURNS_SINCE() for target (" + container.name + " - on " + container.debugMetadata + ") unknown.");
+            }
+
+            int index = 0;
+
+            if ( _patch != null && _patch.TryGetTurnIndex(container, out index) ) {
+                return currentTurnIndex - index;
+            }
+
+            var containerPathStr = container.path.ToString();
+            if (_turnIndices.TryGetValue(containerPathStr, out index))
+            {
+                return currentTurnIndex - index;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        public int callstackDepth {
 			get {
 				return callStack.depth;
 			}
@@ -68,35 +165,54 @@ namespace Ink.Runtime
         // When adding state, update the Copy method, and serialisation.
         // REMEMBER! REMEMBER! REMEMBER!
 
-        internal List<Runtime.Object> outputStream { get { return _outputStream; } }
-		internal List<Choice> currentChoices { 
+        public List<Runtime.Object> outputStream { 
+            get { 
+                return _currentFlow.outputStream; 
+            } 
+        }
+
+        
+
+		public List<Choice> currentChoices { 
 			get { 
 				// If we can continue generating text content rather than choices,
 				// then we reflect the choice list as being empty, since choices
 				// should always come at the end.
 				if( canContinue ) return new List<Choice>();
-				return _currentChoices;
+				return _currentFlow.currentChoices;
 			} 
 		}
-		internal List<Choice> generatedChoices {
+		public List<Choice> generatedChoices {
 			get {
-				return _currentChoices;
+				return _currentFlow.currentChoices;
 			}
 		}
-        internal List<string> currentErrors { get; private set; }
-        internal List<string> currentWarnings { get; private set; }
-        internal VariablesState variablesState { get; private set; }
-        internal CallStack callStack { get; set; }
-        internal List<Runtime.Object> evaluationStack { get; private set; }
-        internal Pointer divertedPointer { get; set; }
-        internal Dictionary<string, int> visitCounts { get; private set; }
-        internal Dictionary<string, int> turnIndices { get; private set; }
-        internal int currentTurnIndex { get; private set; }
-        internal int storySeed { get; set; }
-        internal int previousRandom { get; set; }
-        internal bool didSafeExit { get; set; }
 
-        internal Story story { get; set; }
+        // TODO: Consider removing currentErrors / currentWarnings altogether
+        // and relying on client error handler code immediately handling StoryExceptions etc
+        // Or is there a specific reason we need to collect potentially multiple
+        // errors before throwing/exiting?
+        public List<string> currentErrors { get; private set; }
+        public List<string> currentWarnings { get; private set; }
+        public VariablesState variablesState { get; private set; }
+        public CallStack callStack { 
+            get { 
+                return _currentFlow.callStack;
+            }
+            // set {
+            //     _currentFlow.callStack = value;
+            // } 
+        }
+
+        public List<Runtime.Object> evaluationStack { get; private set; }
+        public Pointer divertedPointer { get; set; }
+
+        public int currentTurnIndex { get; private set; }
+        public int storySeed { get; set; }
+        public int previousRandom { get; set; }
+        public bool didSafeExit { get; set; }
+
+        public Story story { get; set; }
 
         /// <summary>
         /// String representation of the location where the story currently is.
@@ -111,7 +227,7 @@ namespace Ink.Runtime
             }
         }
 
-        internal Runtime.Pointer currentPointer {
+        public Runtime.Pointer currentPointer {
             get {
                 return callStack.currentElement.currentPointer;
             }
@@ -120,7 +236,7 @@ namespace Ink.Runtime
             }
         }
 
-        internal Pointer previousPointer { 
+        public Pointer previousPointer { 
             get {
                 return callStack.currentThread.previousPointer;
             }
@@ -129,33 +245,33 @@ namespace Ink.Runtime
             }
         }
 
-		internal bool canContinue {
+		public bool canContinue {
 			get {
 				return !currentPointer.isNull && !hasError;
 			}
 		}
             
-        internal bool hasError
+        public bool hasError
         {
             get {
                 return currentErrors != null && currentErrors.Count > 0;
             }
         }
 
-        internal bool hasWarning {
+        public bool hasWarning {
             get {
                 return currentWarnings != null && currentWarnings.Count > 0;
             }
         }
 
-        internal string currentText
+        public string currentText
         {
             get 
             {
 				if( _outputStreamTextDirty ) {
 					var sb = new StringBuilder ();
 
-					foreach (var outputObj in _outputStream) {
+					foreach (var outputObj in outputStream) {
 						var textContent = outputObj as StringValue;
 						if (textContent != null) {
 							sb.Append(textContent.value);
@@ -207,14 +323,14 @@ namespace Ink.Runtime
             return sb.ToString();
         }
 
-        internal List<string> currentTags 
+        public List<string> currentTags 
         {
             get 
             {
 				if( _outputStreamTagsDirty ) {
 					_currentTags = new List<string>();
 
-					foreach (var outputObj in _outputStream) {
+					foreach (var outputObj in outputStream) {
 						var tag = outputObj as Tag;
 						if (tag != null) {
 							_currentTags.Add (tag.text);
@@ -229,7 +345,43 @@ namespace Ink.Runtime
         }
 		List<string> _currentTags;
 
-        internal bool inExpressionEvaluation {
+        public string currentFlowName {
+            get {
+                return _currentFlow.name;
+            }
+        }
+
+        public bool currentFlowIsDefaultFlow {
+            get {
+                return _currentFlow.name == kDefaultFlowName;
+            }
+        }
+
+        public List<string> aliveFlowNames {
+            get {
+
+                if( _aliveFlowNamesDirty ) {
+					_aliveFlowNames = new List<string>();
+
+                    if (_namedFlows != null)
+                    {
+                        foreach (string flowName in _namedFlows.Keys) {
+                            if (flowName != kDefaultFlowName) {
+                                _aliveFlowNames.Add(flowName);
+                            }
+                        }
+                    }
+
+					_aliveFlowNamesDirty = false;
+				}
+
+				return _aliveFlowNames;
+            }
+        }
+
+        List<string> _aliveFlowNames;
+
+        public bool inExpressionEvaluation {
             get {
                 return callStack.currentElement.inExpressionEvaluation;
             }
@@ -238,20 +390,22 @@ namespace Ink.Runtime
             }
         }
             
-        internal StoryState (Story story)
+        public StoryState (Story story)
         {
             this.story = story;
 
-            _outputStream = new List<Runtime.Object> ();
+            _currentFlow = new Flow(kDefaultFlowName, story);
+            
 			OutputStreamDirty();
+            _aliveFlowNamesDirty = true;
 
             evaluationStack = new List<Runtime.Object> ();
 
-            callStack = new CallStack (story.rootContentContainer);
             variablesState = new VariablesState (callStack, story.listDefinitions);
 
-            visitCounts = new Dictionary<string, int> ();
-            turnIndices = new Dictionary<string, int> ();
+            _visitCounts = new Dictionary<string, int> ();
+            _turnIndices = new Dictionary<string, int> ();
+
             currentTurnIndex = -1;
 
             // Seed the shuffle random numbers
@@ -259,14 +413,61 @@ namespace Ink.Runtime
             storySeed = (new Random (timeSeed)).Next () % 100;
             previousRandom = 0;
 
-			_currentChoices = new List<Choice> ();
+			
 
             GoToStart();
         }
 
-        internal void GoToStart()
+        public void GoToStart()
         {
             callStack.currentElement.currentPointer = Pointer.StartOf (story.mainContentContainer);
+        }
+
+        internal void SwitchFlow_Internal(string flowName)
+        {
+            if(flowName == null) throw new System.Exception("Must pass a non-null string to Story.SwitchFlow");
+            
+            if( _namedFlows == null ) {
+                _namedFlows = new Dictionary<string, Flow>();
+                _namedFlows[kDefaultFlowName] = _currentFlow;
+            }
+
+            if( flowName == _currentFlow.name ) {
+                return;
+            }
+
+            Flow flow;
+            if( !_namedFlows.TryGetValue(flowName, out flow) ) {
+                flow = new Flow(flowName, story);
+                _namedFlows[flowName] = flow;
+                _aliveFlowNamesDirty = true;
+            }
+
+            _currentFlow = flow;
+            variablesState.callStack = _currentFlow.callStack;
+
+            // Cause text to be regenerated from output stream if necessary
+            OutputStreamDirty();
+        }
+
+        internal void SwitchToDefaultFlow_Internal()
+        {
+            if( _namedFlows == null ) return;
+            SwitchFlow_Internal(kDefaultFlowName);
+        }
+
+        internal void RemoveFlow_Internal(string flowName)
+        {
+            if(flowName == null) throw new System.Exception("Must pass a non-null string to Story.DestroyFlow");
+            if(flowName == kDefaultFlowName) throw new System.Exception("Cannot destroy default flow");
+
+            // If we're currently in the flow that's being removed, switch back to default
+            if( _currentFlow.name == flowName ) {
+                SwitchToDefaultFlow_Internal();
+            }
+
+            _namedFlows.Remove(flowName);
+            _aliveFlowNamesDirty = true;
         }
 
         // Warning: Any Runtime.Object content referenced within the StoryState will
@@ -274,14 +475,31 @@ namespace Ink.Runtime
         // Runtime.Objects are treated as immutable after they've been set up.
         // (e.g. we don't edit a Runtime.StringValue after it's been created an added.)
         // I wonder if there's a sensible way to enforce that..??
-        internal StoryState Copy()
+        public StoryState CopyAndStartPatching()
         {
             var copy = new StoryState(story);
 
-            copy.outputStream.AddRange(_outputStream);
-			OutputStreamDirty();
+            copy._patch = new StatePatch(_patch);
 
-			copy._currentChoices.AddRange(_currentChoices);
+            // Hijack the new default flow to become a copy of our current one
+            // If the patch is applied, then this new flow will replace the old one in _namedFlows
+            copy._currentFlow.name = _currentFlow.name;
+            copy._currentFlow.callStack = new CallStack (_currentFlow.callStack);
+            copy._currentFlow.currentChoices.AddRange(_currentFlow.currentChoices);
+            copy._currentFlow.outputStream.AddRange(_currentFlow.outputStream);
+            copy.OutputStreamDirty();
+
+            // The copy of the state has its own copy of the named flows dictionary,
+            // except with the current flow replaced with the copy above
+            // (Assuming we're in multi-flow mode at all. If we're not then
+            // the above copy is simply the default flow copy and we're done)
+            if( _namedFlows != null ) {
+                copy._namedFlows = new Dictionary<string, Flow>();
+                foreach(var namedFlow in _namedFlows)
+                    copy._namedFlows[namedFlow.Key] = namedFlow.Value;
+                copy._namedFlows[_currentFlow.name] = copy._currentFlow;
+                copy._aliveFlowNamesDirty = true;
+            }
 
             if (hasError) {
                 copy.currentErrors = new List<string> ();
@@ -292,10 +510,13 @@ namespace Ink.Runtime
                 copy.currentWarnings.AddRange (currentWarnings); 
             }
 
-            copy.callStack = new CallStack (callStack);
-
-            copy.variablesState = new VariablesState (copy.callStack, story.listDefinitions);
-            copy.variablesState.CopyFrom (variablesState);
+            
+            // ref copy - exactly the same variables state!
+            // we're expecting not to read it only while in patch mode
+            // (though the callstack will be modified)
+            copy.variablesState = variablesState;
+            copy.variablesState.callStack = copy.callStack;
+            copy.variablesState.patch = copy._patch;
 
             copy.evaluationStack.AddRange (evaluationStack);
 
@@ -304,8 +525,11 @@ namespace Ink.Runtime
 
             copy.previousPointer = previousPointer;
 
-            copy.visitCounts = new Dictionary<string, int> (visitCounts);
-            copy.turnIndices = new Dictionary<string, int> (turnIndices);
+            // visit counts and turn indicies will be read only, not modified
+            // while in patch mode
+            copy._visitCounts = _visitCounts;
+            copy._turnIndices = _turnIndices;
+
             copy.currentTurnIndex = currentTurnIndex;
             copy.storySeed = storySeed;
             copy.previousRandom = previousRandom;
@@ -314,126 +538,196 @@ namespace Ink.Runtime
 
             return copy;
         }
-            
-        /// <summary>
-        /// Object representation of full JSON state. Usually you should use
-        /// LoadJson and ToJson since they serialise directly to string for you.
-        /// But it may be useful to get the object representation so that you
-        /// can integrate it into your own serialisation system.
-        /// </summary>
-        public Dictionary<string, object> jsonToken
+
+        public void RestoreAfterPatch()
         {
-            get {
-				
-				var obj = new Dictionary<string, object> ();
+            // VariablesState was being borrowed by the patched
+            // state, so restore it with our own callstack.
+            // _patch will be null normally, but if you're in the
+            // middle of a save, it may contain a _patch for save purpsoes.
+            variablesState.callStack = callStack;
+            variablesState.patch = _patch; // usually null
+        }
 
-				Dictionary<string, object> choiceThreads = null;
-				foreach (Choice c in _currentChoices) {
-                    c.originalThreadIndex = c.threadAtGeneration.threadIndex;
+        public void ApplyAnyPatch()
+        {
+            if (_patch == null) return;
 
-					if( callStack.ThreadWithIndex(c.originalThreadIndex) == null ) {
-						if( choiceThreads == null )
-							choiceThreads = new Dictionary<string, object> ();
+            variablesState.ApplyPatch();
 
-						choiceThreads[c.originalThreadIndex.ToString()] = c.threadAtGeneration.jsonToken;
-					}
+            foreach(var pathToCount in _patch.visitCounts)
+                ApplyCountChanges(pathToCount.Key, pathToCount.Value, isVisit:true);
+
+            foreach (var pathToIndex in _patch.turnIndices)
+                ApplyCountChanges(pathToIndex.Key, pathToIndex.Value, isVisit:false);
+
+            _patch = null;
+        }
+
+        void ApplyCountChanges(Container container, int newCount, bool isVisit)
+        {
+            var counts = isVisit ? _visitCounts : _turnIndices;
+            counts[container.path.ToString()] = newCount;
+        }
+
+        void WriteJson(SimpleJson.Writer writer)
+        {
+            writer.WriteObjectStart();
+
+            // Flows
+            writer.WritePropertyStart("flows");
+            writer.WriteObjectStart();
+
+            // Multi-flow
+            if( _namedFlows != null ) {
+                foreach(var namedFlow in _namedFlows) {
+                    writer.WriteProperty(namedFlow.Key, namedFlow.Value.WriteJson);
                 }
-				if( choiceThreads != null )
-					obj["choiceThreads"] = choiceThreads;
-
-                
-                obj ["callstackThreads"] = callStack.GetJsonToken();
-                obj ["variablesState"] = variablesState.jsonToken;
-
-                obj ["evalStack"] = Json.ListToJArray (evaluationStack);
-
-                obj ["outputStream"] = Json.ListToJArray (_outputStream);
-
-				obj ["currentChoices"] = Json.ListToJArray (_currentChoices);
-
-                if( !divertedPointer.isNull )
-                    obj ["currentDivertTarget"] = divertedPointer.path.componentsString;
-
-                obj ["visitCounts"] = Json.IntDictionaryToJObject (visitCounts);
-                obj ["turnIndices"] = Json.IntDictionaryToJObject (turnIndices);
-                obj ["turnIdx"] = currentTurnIndex;
-                obj ["storySeed"] = storySeed;
-                obj ["previousRandom"] = previousRandom;
-
-                obj ["inkSaveVersion"] = kInkSaveStateVersion;
-
-                // Not using this right now, but could do in future.
-                obj ["inkFormatVersion"] = Story.inkVersionCurrent;
-
-                return obj;
+            } 
+            
+            // Single flow
+            else {
+                writer.WriteProperty(_currentFlow.name, _currentFlow.WriteJson);
             }
-            set {
 
-                var jObject = value;
+            writer.WriteObjectEnd();
+            writer.WritePropertyEnd(); // end of flows
 
-				object jSaveVersion = null;
-				if (!jObject.TryGetValue("inkSaveVersion", out jSaveVersion)) {
-                    throw new StoryException ("ink save format incorrect, can't load.");
+            writer.WriteProperty("currentFlowName", _currentFlow.name);
+
+            writer.WriteProperty("variablesState", variablesState.WriteJson);
+
+            writer.WriteProperty("evalStack", w => Json.WriteListRuntimeObjs(w, evaluationStack));
+
+
+            if (!divertedPointer.isNull)
+                writer.WriteProperty("currentDivertTarget", divertedPointer.path.componentsString);
+                
+            writer.WriteProperty("visitCounts", w => Json.WriteIntDictionary(w, _visitCounts));
+            writer.WriteProperty("turnIndices", w => Json.WriteIntDictionary(w, _turnIndices));
+
+
+            writer.WriteProperty("turnIdx", currentTurnIndex);
+            writer.WriteProperty("storySeed", storySeed);
+            writer.WriteProperty("previousRandom", previousRandom);
+
+            writer.WriteProperty("inkSaveVersion", kInkSaveStateVersion);
+
+            // Not using this right now, but could do in future.
+            writer.WriteProperty("inkFormatVersion", Story.inkVersionCurrent);
+
+            writer.WriteObjectEnd();
+        }
+
+
+        void LoadJsonObj(Dictionary<string, object> jObject)
+        {
+			object jSaveVersion = null;
+			if (!jObject.TryGetValue("inkSaveVersion", out jSaveVersion)) {
+                throw new Exception ("ink save format incorrect, can't load.");
+            }
+            else if ((int)jSaveVersion < kMinCompatibleLoadVersion) {
+                throw new Exception("Ink save format isn't compatible with the current version (saw '"+jSaveVersion+"', but minimum is "+kMinCompatibleLoadVersion+"), so can't load.");
+            }
+
+            // Flows: Always exists in latest format (even if there's just one default)
+            // but this dictionary doesn't exist in prev format
+            object flowsObj = null;
+            if (jObject.TryGetValue("flows", out flowsObj)) {
+                var flowsObjDict = (Dictionary<string, object>)flowsObj;
+                
+                // Single default flow
+                if( flowsObjDict.Count == 1 )
+                    _namedFlows = null;
+
+                // Multi-flow, need to create flows dict
+                else if( _namedFlows == null )
+                    _namedFlows = new Dictionary<string, Flow>();
+
+                // Multi-flow, already have a flows dict
+                else
+                    _namedFlows.Clear();
+
+                // Load up each flow (there may only be one)
+                foreach(var namedFlowObj in flowsObjDict) {
+                    var name = namedFlowObj.Key;
+                    var flowObj = (Dictionary<string, object>)namedFlowObj.Value;
+
+                    // Load up this flow using JSON data
+                    var flow = new Flow(name, story, flowObj);
+
+                    if( flowsObjDict.Count == 1 ) {
+                        _currentFlow = new Flow(name, story, flowObj);
+                    } else {
+                        _namedFlows[name] = flow;
+                    }
                 }
-                else if ((int)jSaveVersion < kMinCompatibleLoadVersion) {
-                    throw new StoryException("Ink save format isn't compatible with the current version (saw '"+jSaveVersion+"', but minimum is "+kMinCompatibleLoadVersion+"), so can't load.");
+
+                if( _namedFlows != null && _namedFlows.Count > 1 ) {
+                    var currFlowName = (string)jObject["currentFlowName"];
+                    _currentFlow = _namedFlows[currFlowName];
                 }
+            }
 
-                callStack.SetJsonToken ((Dictionary < string, object > )jObject ["callstackThreads"], story);
-                variablesState.jsonToken = (Dictionary < string, object> )jObject["variablesState"];
+            // Old format: individually load up callstack, output stream, choices in current/default flow
+            else {
+                _namedFlows = null;
+                _currentFlow.name = kDefaultFlowName;
+                _currentFlow.callStack.SetJsonToken ((Dictionary < string, object > )jObject ["callstackThreads"], story);
+                _currentFlow.outputStream = Json.JArrayToRuntimeObjList ((List<object>)jObject ["outputStream"]);
+                _currentFlow.currentChoices = Json.JArrayToRuntimeObjList<Choice>((List<object>)jObject ["currentChoices"]);
 
-                evaluationStack = Json.JArrayToRuntimeObjList ((List<object>)jObject ["evalStack"]);
+                object jChoiceThreadsObj = null;
+                jObject.TryGetValue("choiceThreads", out jChoiceThreadsObj);
+                _currentFlow.LoadFlowChoiceThreads((Dictionary<string, object>)jChoiceThreadsObj, story);
+            }
 
-                _outputStream = Json.JArrayToRuntimeObjList ((List<object>)jObject ["outputStream"]);
-				OutputStreamDirty();
+            OutputStreamDirty();
+            _aliveFlowNamesDirty = true;
 
-				_currentChoices = Json.JArrayToRuntimeObjList<Choice>((List<object>)jObject ["currentChoices"]);
+            variablesState.SetJsonToken((Dictionary < string, object> )jObject["variablesState"]);
+            variablesState.callStack = _currentFlow.callStack;
 
-				object currentDivertTargetPath;
-				if (jObject.TryGetValue("currentDivertTarget", out currentDivertTargetPath)) {
-                    var divertPath = new Path (currentDivertTargetPath.ToString ());
-                    divertedPointer = story.PointerAtPath (divertPath);
-                }
-                    
-                visitCounts = Json.JObjectToIntDictionary ((Dictionary<string, object>)jObject ["visitCounts"]);
-                turnIndices = Json.JObjectToIntDictionary ((Dictionary<string, object>)jObject ["turnIndices"]);
-                currentTurnIndex = (int)jObject ["turnIdx"];
-                storySeed = (int)jObject ["storySeed"];
-                previousRandom = (int)jObject ["previousRandom"];
+            evaluationStack = Json.JArrayToRuntimeObjList ((List<object>)jObject ["evalStack"]);
 
-				object jChoiceThreadsObj = null;
-				jObject.TryGetValue("choiceThreads", out jChoiceThreadsObj);
-				var jChoiceThreads = (Dictionary<string, object>)jChoiceThreadsObj;
 
-				foreach (var c in _currentChoices) {
-					var foundActiveThread = callStack.ThreadWithIndex(c.originalThreadIndex);
-					if( foundActiveThread != null ) {
-                        c.threadAtGeneration = foundActiveThread.Copy ();
-					} else {
-						var jSavedChoiceThread = (Dictionary <string, object>) jChoiceThreads[c.originalThreadIndex.ToString()];
-						c.threadAtGeneration = new CallStack.Thread(jSavedChoiceThread, story);
-					}
-				}
+			object currentDivertTargetPath;
+			if (jObject.TryGetValue("currentDivertTarget", out currentDivertTargetPath)) {
+                var divertPath = new Path (currentDivertTargetPath.ToString ());
+                divertedPointer = story.PointerAtPath (divertPath);
+            }
+                
+            _visitCounts = Json.JObjectToIntDictionary((Dictionary<string, object>)jObject["visitCounts"]);
+            _turnIndices = Json.JObjectToIntDictionary((Dictionary<string, object>)jObject["turnIndices"]);
 
+            currentTurnIndex = (int)jObject ["turnIdx"];
+            storySeed = (int)jObject ["storySeed"];
+
+            // Not optional, but bug in inkjs means it's actually missing in inkjs saves
+            object previousRandomObj = null;
+            if( jObject.TryGetValue("previousRandom", out previousRandomObj) ) {
+                previousRandom = (int)previousRandomObj;
+            } else {
+                previousRandom = 0;
             }
         }
             
-        internal void ResetErrors()
+        public void ResetErrors()
         {
             currentErrors = null;
             currentWarnings = null;
         }
             
-        internal void ResetOutput(List<Runtime.Object> objs = null)
+        public void ResetOutput(List<Runtime.Object> objs = null)
         {
-            _outputStream.Clear ();
-            if( objs != null ) _outputStream.AddRange (objs);
+            outputStream.Clear ();
+            if( objs != null ) outputStream.AddRange (objs);
 			OutputStreamDirty();
         }
 
         // Push to output stream, but split out newlines in text for consistency
         // in dealing with them later.
-        internal void PushToOutputStream(Runtime.Object obj)
+        public void PushToOutputStream(Runtime.Object obj)
         {
             var text = obj as StringValue;
             if (text) {
@@ -452,7 +746,7 @@ namespace Ink.Runtime
 			OutputStreamDirty();
         }
 
-        internal void PopFromOutputStream (int count)
+        public void PopFromOutputStream (int count)
         {
             outputStream.RemoveRange (outputStream.Count - count, count);
             OutputStreamDirty ();
@@ -469,14 +763,14 @@ namespace Ink.Runtime
         // the main string are ignored, since this is for the purpose of gluing only.
         //
         //  - If no splitting is necessary, null is returned.
-        //  - A newline on its own is returned in an list for consistency.
+        //  - A newline on its own is returned in a list for consistency.
         List<Runtime.StringValue> TrySplittingHeadTailWhitespace(Runtime.StringValue single)
         {
             string str = single.value;
 
             int headFirstNewlineIdx = -1;
             int headLastNewlineIdx = -1;
-            for (int i = 0; i < str.Length; ++i) {
+            for (int i = 0; i < str.Length; i++) {
                 char c = str [i];
                 if (c == '\n') {
                     if (headFirstNewlineIdx == -1)
@@ -491,7 +785,7 @@ namespace Ink.Runtime
 
             int tailLastNewlineIdx = -1;
             int tailFirstNewlineIdx = -1;
-            for (int i = 0; i < str.Length; ++i) {
+            for (int i = str.Length-1; i >= 0; i--) {
                 char c = str [i];
                 if (c == '\n') {
                     if (tailLastNewlineIdx == -1)
@@ -575,8 +869,8 @@ namespace Ink.Runtime
                 // If we're in string eval within the current function, we
                 // don't want to trim back further than the length of the current string.
                 int glueTrimIndex = -1;
-                for (int i = _outputStream.Count - 1; i >= 0; i--) {
-                    var o = _outputStream [i];
+                for (int i = outputStream.Count - 1; i >= 0; i--) {
+                    var o = outputStream [i];
                     var c = o as ControlCommand;
                     var g = o as Glue;
 
@@ -643,7 +937,7 @@ namespace Ink.Runtime
             }
 
             if (includeInOutput) {
-                _outputStream.Add (obj);
+                outputStream.Add (obj);
                 OutputStreamDirty();
             }
         }
@@ -658,9 +952,9 @@ namespace Ink.Runtime
             // e.g. This is the content   \n   \n\n
             //                            ^---------^ whitespace to remove
             //                        ^--- first while loop stops here
-            int i = _outputStream.Count-1;
+            int i = outputStream.Count-1;
             while (i >= 0) {
-                var obj = _outputStream [i];
+                var obj = outputStream [i];
                 var cmd = obj as ControlCommand;
                 var txt = obj as StringValue;
 
@@ -676,10 +970,10 @@ namespace Ink.Runtime
             // Remove the whitespace
             if (removeWhitespaceFrom >= 0) {
                 i=removeWhitespaceFrom;
-                while(i < _outputStream.Count) {
-                    var text = _outputStream [i] as StringValue;
+                while(i < outputStream.Count) {
+                    var text = outputStream [i] as StringValue;
                     if (text) {
-                        _outputStream.RemoveAt (i);
+                        outputStream.RemoveAt (i);
                     } else {
                         i++;
                     }
@@ -692,10 +986,10 @@ namespace Ink.Runtime
         // Only called when non-whitespace is appended
         void RemoveExistingGlue()
         {
-            for (int i = _outputStream.Count - 1; i >= 0; i--) {
-                var c = _outputStream [i];
+            for (int i = outputStream.Count - 1; i >= 0; i--) {
+                var c = outputStream [i];
                 if (c is Glue) {
-                    _outputStream.RemoveAt (i);
+                    outputStream.RemoveAt (i);
                 } else if( c is ControlCommand ) { // e.g. BeginString
                     break;
                 }
@@ -704,15 +998,15 @@ namespace Ink.Runtime
 			OutputStreamDirty();
         }
 
-        internal bool outputStreamEndsInNewline {
+        public bool outputStreamEndsInNewline {
             get {
-                if (_outputStream.Count > 0) {
+                if (outputStream.Count > 0) {
 
-                    for (int i = _outputStream.Count - 1; i >= 0; i--) {
-                        var obj = _outputStream [i];
+                    for (int i = outputStream.Count - 1; i >= 0; i--) {
+                        var obj = outputStream [i];
                         if (obj is ControlCommand) // e.g. BeginString
                             break;
-                        var text = _outputStream [i] as StringValue;
+                        var text = outputStream [i] as StringValue;
                         if (text) {
                             if (text.isNewline)
                                 return true;
@@ -726,9 +1020,9 @@ namespace Ink.Runtime
             }
         }
 
-        internal bool outputStreamContainsContent {
+        public bool outputStreamContainsContent {
             get {
-                foreach (var content in _outputStream) {
+                foreach (var content in outputStream) {
                     if (content is StringValue)
                         return true;
                 }
@@ -736,10 +1030,10 @@ namespace Ink.Runtime
             }
         }
 
-        internal bool inStringEvaluation {
+        public bool inStringEvaluation {
             get {
-                for (int i = _outputStream.Count - 1; i >= 0; i--) {
-                    var cmd = _outputStream [i] as ControlCommand;
+                for (int i = outputStream.Count - 1; i >= 0; i--) {
+                    var cmd = outputStream [i] as ControlCommand;
                     if (cmd && cmd.commandType == ControlCommand.CommandType.BeginString) {
                         return true;
                     }
@@ -749,7 +1043,7 @@ namespace Ink.Runtime
             }
         }
 
-        internal void PushEvaluationStack(Runtime.Object obj)
+        public void PushEvaluationStack(Runtime.Object obj)
         {
             // Include metadata about the origin List for list values when
             // they're used, so that lower level functions can make use
@@ -776,19 +1070,19 @@ namespace Ink.Runtime
             evaluationStack.Add(obj);
         }
 
-        internal Runtime.Object PopEvaluationStack()
+        public Runtime.Object PopEvaluationStack()
         {
             var obj = evaluationStack [evaluationStack.Count - 1];
             evaluationStack.RemoveAt (evaluationStack.Count - 1);
             return obj;
         }
 
-        internal Runtime.Object PeekEvaluationStack()
+        public Runtime.Object PeekEvaluationStack()
         {
             return evaluationStack [evaluationStack.Count - 1];
         }
 
-        internal List<Runtime.Object> PopEvaluationStack(int numberOfObjects)
+        public List<Runtime.Object> PopEvaluationStack(int numberOfObjects)
         {
             if(numberOfObjects > evaluationStack.Count) {
                 throw new System.Exception ("trying to pop too many objects");
@@ -809,13 +1103,9 @@ namespace Ink.Runtime
         /// </summary>
         public void ForceEnd()
         {
-            while (callStack.canPopThread)
-                callStack.PopThread ();
+            callStack.Reset();
 
-            while (callStack.canPop)
-                PopCallstack ();
-
-			_currentChoices.Clear();
+			_currentFlow.currentChoices.Clear();
 
             currentPointer = Pointer.Null;
             previousPointer = Pointer.Null;
@@ -840,15 +1130,15 @@ namespace Ink.Runtime
             }
 
             // Trim whitespace from END of function call
-            for (int i = _outputStream.Count - 1; i >= functionStartPoint; i--) {
-                var obj = _outputStream [i];
+            for (int i = outputStream.Count - 1; i >= functionStartPoint; i--) {
+                var obj = outputStream [i];
                 var txt = obj as StringValue;
                 var cmd = obj as ControlCommand;
                 if (!txt) continue;
                 if (cmd) break;
 
                 if (txt.isNewline || txt.isInlineWhitespace) {
-                    _outputStream.RemoveAt (i);
+                    outputStream.RemoveAt (i);
                     OutputStreamDirty ();
                 } else {
                     break;
@@ -856,7 +1146,7 @@ namespace Ink.Runtime
             }
         }
 
-        internal void PopCallstack (PushPopType? popType = null)
+        public void PopCallstack (PushPopType? popType = null)
         {
             // Add the end of a function call, trim any whitespace from the end.
             if (callStack.currentElement.type == PushPopType.Function)
@@ -866,10 +1156,10 @@ namespace Ink.Runtime
         }
 
         // Don't make public since the method need to be wrapped in Story for visit counting
-        internal void SetChosenPath(Path path, bool incrementingTurnIndex)
+        public void SetChosenPath(Path path, bool incrementingTurnIndex)
         {
             // Changing direction, assume we need to clear current set of choices
-			_currentChoices.Clear ();
+			_currentFlow.currentChoices.Clear ();
 
             var newPointer = story.PointerAtPath (path);
             if (!newPointer.isNull && newPointer.index == -1)
@@ -881,7 +1171,7 @@ namespace Ink.Runtime
                 currentTurnIndex++;
         }
 
-        internal void StartFunctionEvaluationFromGame (Container funcContainer, params object[] arguments)
+        public void StartFunctionEvaluationFromGame (Container funcContainer, params object[] arguments)
         {
             callStack.Push (PushPopType.FunctionEvaluationFromGame, evaluationStack.Count);
             callStack.currentElement.currentPointer = Pointer.StartOf (funcContainer);
@@ -889,13 +1179,13 @@ namespace Ink.Runtime
             PassArgumentsToEvaluationStack (arguments);
         }
 
-        internal void PassArgumentsToEvaluationStack (params object [] arguments)
+        public void PassArgumentsToEvaluationStack (params object [] arguments)
         {
             // Pass arguments onto the evaluation stack
             if (arguments != null) {
                 for (int i = 0; i < arguments.Length; i++) {
-                    if (!(arguments [i] is int || arguments [i] is float || arguments [i] is string)) {
-                        throw new System.ArgumentException ("ink arguments when calling EvaluateFunction / ChoosePathStringWithParameters must be int, float or string");
+                    if (!(arguments [i] is int || arguments [i] is float || arguments [i] is string || arguments [i] is bool || arguments [i] is InkList)) {
+                        throw new System.ArgumentException ("ink arguments when calling EvaluateFunction / ChoosePathStringWithParameters must be int, float, string, bool or InkList. Argument was "+(arguments [i] == null ? "null" : arguments [i].GetType().Name));
                     }
 
                     PushEvaluationStack (Runtime.Value.Create (arguments [i]));
@@ -903,7 +1193,7 @@ namespace Ink.Runtime
             }
         }
             
-        internal bool TryExitFunctionEvaluationFromGame ()
+        public bool TryExitFunctionEvaluationFromGame ()
         {
             if( callStack.currentElement.type == PushPopType.FunctionEvaluationFromGame ) {
                 currentPointer = Pointer.Null;
@@ -914,10 +1204,10 @@ namespace Ink.Runtime
             return false;
         }
 
-        internal object CompleteFunctionEvaluationFromGame ()
+        public object CompleteFunctionEvaluationFromGame ()
         {
             if (callStack.currentElement.type != PushPopType.FunctionEvaluationFromGame) {
-                throw new StoryException ("Expected external function evaluation to be complete. Stack trace: "+callStack.callStackTrace);
+                throw new Exception ("Expected external function evaluation to be complete. Stack trace: "+callStack.callStackTrace);
             }
 
             int originalEvaluationStackHeight = callStack.currentElement.evaluationStackHeightWhenPushed;
@@ -958,7 +1248,7 @@ namespace Ink.Runtime
             return null;
         }
 
-        internal void AddError(string message, bool isWarning)
+        public void AddError(string message, bool isWarning)
         {
             if (!isWarning) {
                 if (currentErrors == null) currentErrors = new List<string> ();
@@ -978,12 +1268,19 @@ namespace Ink.Runtime
         // REMEMBER! REMEMBER! REMEMBER!
         // When adding state, update the Copy method and serialisation
         // REMEMBER! REMEMBER! REMEMBER!
-            
-        List<Runtime.Object> _outputStream;
+
+
+        Dictionary<string, int> _visitCounts;
+        Dictionary<string, int> _turnIndices;
 		bool _outputStreamTextDirty = true;
 		bool _outputStreamTagsDirty = true;
 
-		List<Choice> _currentChoices;
+        StatePatch _patch;
+
+        Flow _currentFlow;
+        Dictionary<string, Flow> _namedFlows;
+        const string kDefaultFlowName = "DEFAULT_FLOW";
+        bool _aliveFlowNamesDirty = true;
     }
 }
 

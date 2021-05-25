@@ -40,13 +40,13 @@ namespace Ink.Runtime
             this.itemName = nameParts [1];
         }
 
-        internal static InkListItem Null {
+        public static InkListItem Null {
             get {
                 return new InkListItem (null, null);
             }
         }
 
-        internal bool isNull {
+        public bool isNull {
             get {
                 return originName == null && itemName == null;
             }
@@ -115,7 +115,14 @@ namespace Ink.Runtime
         /// <summary>
         /// Create a new ink list that contains the same contents as another list.
         /// </summary>
-        public InkList (InkList otherList) : base (otherList) { _originNames = otherList.originNames; }
+        public InkList(InkList otherList) : base(otherList)
+        {
+            _originNames = otherList.originNames;
+            if (otherList.origins != null)
+            {
+                origins = new List<ListDefinition>(otherList.origins);
+            }
+        }
 
         /// <summary>
         /// Create a new empty ink list that's intended to hold items from a particular origin
@@ -132,10 +139,25 @@ namespace Ink.Runtime
                 throw new System.Exception ("InkList origin could not be found in story when constructing new list: " + singleOriginListName);
         }
 
-        internal InkList (KeyValuePair<InkListItem, int> singleElement)
+        public InkList (KeyValuePair<InkListItem, int> singleElement)
         {
             Add (singleElement.Key, singleElement.Value);
-        }
+		}
+
+		/// <summary>
+		/// Converts a string to an ink list and returns for use in the story.
+		/// </summary>
+		/// <returns>InkList created from string list item</returns>
+		/// <param name="itemKey">Item key.</param>
+		/// <param name="originStory">Origin story.</param>
+		public static InkList FromString(string myListItem, Story originStory) {
+			var listValue = originStory.listDefinitions.FindSingleItemListWithName (myListItem);
+			if (listValue)
+				return new InkList (listValue.value);
+			else 
+                throw new System.Exception ("Could not find the InkListItem from the string '" + myListItem + "' to create an InkList because it doesn't exist in the original list definition in ink.");
+		}
+
 
         /// <summary>
         /// Adds the given item to the ink list. Note that the item must come from a list definition that
@@ -210,8 +232,8 @@ namespace Ink.Runtime
         // necessary for certain operations (e.g. interacting with ints).
         // Only the story has access to the full set of lists, so that
         // the origin can be resolved from the originListName.
-        internal List<ListDefinition> origins;
-        internal ListDefinition originOfMaxItem {
+        public List<ListDefinition> origins;
+        public ListDefinition originOfMaxItem {
             get {
                 if (origins == null) return null;
 
@@ -228,7 +250,7 @@ namespace Ink.Runtime
         // Origin name needs to be serialised when content is empty,
         // assuming a name is availble, for list definitions with variable
         // that is currently empty.
-        internal List<string> originNames {
+        public List<string> originNames {
             get {
                 if (this.Count > 0) {
                     if (_originNames == null && this.Count > 0)
@@ -245,12 +267,12 @@ namespace Ink.Runtime
         }
         List<string> _originNames;
 
-        internal void SetInitialOriginName (string initialOriginName)
+        public void SetInitialOriginName (string initialOriginName)
         {
             _originNames = new List<string> { initialOriginName };
         }
 
-        internal void SetInitialOriginNames (List<string> initialOriginNames)
+        public void SetInitialOriginNames (List<string> initialOriginNames)
         {
             if (initialOriginNames == null)
                 _originNames = null;
@@ -351,6 +373,19 @@ namespace Ink.Runtime
         }
 
         /// <summary>
+        /// Fast test for the existence of any intersection between the current list and another
+        /// </summary>
+        public bool HasIntersection(InkList otherList)
+        {
+            foreach (var kv in this)
+            {
+                if (otherList.ContainsKey(kv.Key))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Returns a new list that's the same as the current one, except with the given items
         /// removed that are in the passed in list. Equivalent to calling (list1 - list2) in ink.
         /// </summary>
@@ -374,6 +409,18 @@ namespace Ink.Runtime
                 if (!this.ContainsKey (kv.Key)) return false;
             }
             return true;
+        }
+        /// <summary>
+        /// Returns true if the current list contains an item matching the given name.
+        /// </summary>
+        /// <param name="otherList">Other list.</param>
+        public bool Contains(string listItemName)
+        {
+            foreach (var kv in this)
+            {
+                if (kv.Key.itemName == listItemName) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -431,7 +478,7 @@ namespace Ink.Runtime
                 && minItem.Value <= otherList.minItem.Value;
         }
 
-        internal InkList MaxAsList ()
+        public InkList MaxAsList ()
         {
             if (Count > 0)
                 return new InkList (maxItem);
@@ -439,7 +486,7 @@ namespace Ink.Runtime
                 return new InkList ();
         }
 
-        internal InkList MinAsList ()
+        public InkList MinAsList ()
         {
             if (Count > 0)
                 return new InkList (minItem);

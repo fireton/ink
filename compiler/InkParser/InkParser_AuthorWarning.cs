@@ -2,13 +2,14 @@
 
 namespace Ink
 {
-    internal partial class InkParser
+    public partial class InkParser
     {
         protected AuthorWarning AuthorWarning()
         {
             Whitespace ();
 
-            if (Parse (Identifier) != "TODO")
+            var identifier = Parse (IdentifierWithMetadata);
+            if (identifier == null || identifier.name != "TODO")
                 return null;
 
             Whitespace ();

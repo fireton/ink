@@ -15,21 +15,9 @@ namespace Ink
             public Ink.IFileHandler fileHandler;
         }
 
-        public List<string> errors {
+        public Parsed.Story parsedStory {
             get {
-                return _errors;
-            }
-        }
-
-        public List<string> warnings {
-            get {
-                return _warnings;
-            }
-        }
-
-        public List<string> authorMessages {
-            get {
-                return _authorMessages;
+                return _parsedStory;
             }
         }
 
@@ -41,20 +29,25 @@ namespace Ink
                 _pluginManager = new PluginManager (_options.pluginNames);
         }
 
+        public Parsed.Story Parse()
+        {
+            _parser = new InkParser(_inputString, _options.sourceFilename, OnParseError, _options.fileHandler);
+            _parsedStory = _parser.Parse();
+            return _parsedStory;
+        }
+
         public Runtime.Story Compile ()
         {
-            _parser = new InkParser (_inputString, _options.sourceFilename, OnError, _options.fileHandler);
-
-            _parsedStory = _parser.Parse ();
+            Parse();
 
             if( _pluginManager != null )
                 _pluginManager.PostParse(_parsedStory);
 
-            if (_parsedStory != null && _errors.Count == 0) {
+            if (_parsedStory != null && !_hadParseError) {
 
                 _parsedStory.countAllVisits = _options.countAllVisits;
 
-                _runtimeStory = _parsedStory.ExportRuntime (OnError);
+                _runtimeStory = _parsedStory.ExportRuntime (_options.errorHandler);
 
                 if( _pluginManager != null )
                     _pluginManager.PostExport (_parsedStory, _runtimeStory);
@@ -71,37 +64,19 @@ namespace Ink
             public string divertedPath;
             public string output;
         }
-        public CommandLineInputResult ReadCommandLineInput (string userInput)
+        public CommandLineInputResult HandleInput (CommandLineInput inputResult)
         {
-            var inputParser = new InkParser (userInput);
-            var inputResult = inputParser.CommandLineUserInput ();
-
             var result = new CommandLineInputResult ();
 
-            // Choice
-            if (inputResult.choiceInput != null) {
-                result.choiceIdx = ((int)inputResult.choiceInput) - 1;
-            }
-
-            // Help
-            else if (inputResult.isHelp) {
-                result.output = "Type a choice number, a divert (e.g. '-> myKnot'), an expression, or a variable assignment (e.g. 'x = 5')";
-            }
-
-            // Quit
-            else if (inputResult.isExit) {
-                result.requestsExit = true;
-            }
-
             // Request for debug source line number
-            else if (inputResult.debugSource != null) {
+            if (inputResult.debugSource != null) {
                 var offset = (int)inputResult.debugSource;
                 var dm = DebugMetadataForContentAtOffset (offset);
                 if (dm != null)
                     result.output = "DebugSource: " + dm.ToString ();
                 else
                     result.output = "DebugSource: Unknown source";
-            } 
+            }
 
             // Request for runtime path lookup (to line number)
             else if (inputResult.debugPathLookup != null) {
@@ -116,47 +91,53 @@ namespace Ink
 
             // User entered some ink
             else if (inputResult.userImmediateModeStatement != null) {
-
                 var parsedObj = inputResult.userImmediateModeStatement as Parsed.Object;
-
-                // Variable assignment: create in Parsed.Story as well as the Runtime.Story
-                // so that we don't get an error message during reference resolution
-                if (parsedObj is Parsed.VariableAssignment) {
-                    var varAssign = (Parsed.VariableAssignment)parsedObj;
-                    if (varAssign.isNewTemporaryDeclaration) {
-                        _parsedStory.TryAddNewVariableDeclaration (varAssign);
-                    }
-                }
-
-                parsedObj.parent = _parsedStory;
-                var runtimeObj = parsedObj.runtimeObject;
-
-                parsedObj.ResolveReferences (_parsedStory);
-
-                if (!_parsedStory.hadError) {
-
-                    // Divert
-                    if (parsedObj is Parsed.Divert) {
-                        var parsedDivert = parsedObj as Parsed.Divert;
-                        result.divertedPath = parsedDivert.runtimeDivert.targetPath.ToString();
-                    }
-
-                    // Expression or variable assignment
-                    else if (parsedObj is Parsed.Expression || parsedObj is Parsed.VariableAssignment) {
-                        var evalResult = _runtimeStory.EvaluateExpression ((Runtime.Container)runtimeObj);
-                        if (evalResult != null) {
-                            result.output = evalResult.ToString ();
-                        }
-                    }
-                } else {
-                    _parsedStory.ResetError ();
-                }
+                return ExecuteImmediateStatement(parsedObj);
 
             } else {
-                result.output = "Unexpected input. Type 'help' or a choice number.";
+              return null;
             }
 
             return result;
+        }
+
+        CommandLineInputResult ExecuteImmediateStatement(Parsed.Object parsedObj) {
+            var result = new CommandLineInputResult ();
+
+           // Variable assignment: create in Parsed.Story as well as the Runtime.Story
+           // so that we don't get an error message during reference resolution
+           if (parsedObj is Parsed.VariableAssignment) {
+               var varAssign = (Parsed.VariableAssignment)parsedObj;
+               if (varAssign.isNewTemporaryDeclaration) {
+                   _parsedStory.TryAddNewVariableDeclaration (varAssign);
+               }
+           }
+
+           parsedObj.parent = _parsedStory;
+           var runtimeObj = parsedObj.runtimeObject;
+
+           parsedObj.ResolveReferences (_parsedStory);
+
+           if (!_parsedStory.hadError) {
+
+               // Divert
+               if (parsedObj is Parsed.Divert) {
+                   var parsedDivert = parsedObj as Parsed.Divert;
+                   result.divertedPath = parsedDivert.runtimeDivert.targetPath.ToString();
+               }
+
+               // Expression or variable assignment
+               else if (parsedObj is Parsed.Expression || parsedObj is Parsed.VariableAssignment) {
+                   var evalResult = _runtimeStory.EvaluateExpression ((Runtime.Container)runtimeObj);
+                   if (evalResult != null) {
+                       result.output = evalResult.ToString ();
+                   }
+               }
+           } else {
+               _parsedStory.ResetError ();
+           }
+
+          return result;
         }
 
         public void RetrieveDebugSourceForLatestContent ()
@@ -191,31 +172,24 @@ namespace Ink
             return null;
         }
 
-        internal struct DebugSourceRange
+        public struct DebugSourceRange
         {
             public int length;
             public Runtime.DebugMetadata debugMetadata;
             public string text;
         }
 
-        void OnError (string message, ErrorType errorType)
+        // Need to wrap the error handler so that we know
+        // when there was a critical error between parse and codegen stages
+        void OnParseError (string message, ErrorType errorType)
         {
-        	switch (errorType) {
-        	case ErrorType.Author:
-        		_authorMessages.Add (message);
-        		break;
-
-        	case ErrorType.Warning:
-        		_warnings.Add (message);
-        		break;
-
-        	case ErrorType.Error:
-        		_errors.Add (message);
-        		break;
-        	}
-
+            if( errorType == ErrorType.Error )
+                _hadParseError = true;
+            
             if (_options.errorHandler != null)
                 _options.errorHandler (message, errorType);
+            else
+                throw new System.Exception(message);
         }
 
         string _inputString;
@@ -228,9 +202,7 @@ namespace Ink
 
         PluginManager _pluginManager;
 
-        List<string> _errors = new List<string> ();
-        List<string> _warnings = new List<string> ();
-        List<string> _authorMessages = new List<string> ();
+        bool _hadParseError;
 
         List<DebugSourceRange> _debugSourceRanges = new List<DebugSourceRange> ();
     }
